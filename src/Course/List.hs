@@ -188,7 +188,7 @@ flatten ::
   List (List a)
   -> List a
 flatten =
-  error "todo: Course.List#flatten"
+  foldLeft (++) Nil
 
 -- | Map a function then flatten to a list.
 --
@@ -204,8 +204,8 @@ flatMap ::
   (a -> List b)
   -> List a
   -> List b
-flatMap =
-  error "todo: Course.List#flatMap"
+flatMap f =
+  flatten . map f
 
 -- | Flatten a list of lists to a list (again).
 -- HOWEVER, this time use the /flatMap/ function that you just wrote.
@@ -215,7 +215,7 @@ flattenAgain ::
   List (List a)
   -> List a
 flattenAgain =
-  error "todo: Course.List#flattenAgain"
+  flatMap id
 
 -- | Convert a list of optional values to an optional list of values.
 --
@@ -242,8 +242,11 @@ flattenAgain =
 seqOptional ::
   List (Optional a)
   -> Optional (List a)
-seqOptional =
-  error "todo: Course.List#seqOptional"
+seqOptional (Empty :. _)     = Empty
+seqOptional Nil              = Full Nil
+seqOptional ((Full x) :. xs) = x `opCons` seqOptional xs
+  where opCons _ Empty = Empty
+        opCons y (Full ys) = Full $ y :. ys
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -265,8 +268,10 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find =
-  error "todo: Course.List#find"
+find _ Nil = Empty
+find f (x :. xs)
+  | f x = Full x
+  | otherwise = find f xs
 
 -- | Determine if the length of the given list is greater than 4.
 --
@@ -284,8 +289,10 @@ find =
 lengthGT4 ::
   List a
   -> Bool
-lengthGT4 =
-  error "todo: Course.List#lengthGT4"
+lengthGT4 = lengthGT 4
+  where lengthGT 0 (_ :. _) = True
+        lengthGT _ Nil = False
+        lengthGT n (_ :. xs) = lengthGT (n - 1) xs
 
 -- | Reverse a list.
 --
@@ -301,8 +308,7 @@ lengthGT4 =
 reverse ::
   List a
   -> List a
-reverse =
-  error "todo: Course.List#reverse"
+reverse = foldLeft (flip (:.)) Nil
 
 -- | Produce an infinite `List` that seeds with the given value at its head,
 -- then runs the given function for subsequent elements
@@ -316,8 +322,7 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce =
-  error "todo: Course.List#produce"
+produce f a = a :. produce f (f a)
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?
@@ -331,8 +336,7 @@ produce =
 notReverse ::
   List a
   -> List a
-notReverse =
-  error "todo: Is it even possible?"
+notReverse = reverse -- Either it's not possible, or I failed. I don't think it's possible.
 
 ---- End of list exercises
 
