@@ -131,8 +131,7 @@ map ::
   -> List a
   -> List b
 map f =
-  let fCons a b = f a :. b
-   in foldRight fCons Nil
+   foldRight ((:.) . f) Nil
 
 -- | Return elements satisfying the given predicate.
 --
