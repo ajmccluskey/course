@@ -117,6 +117,8 @@ length ::
   -> Int
 length =
   foldLeft (\b _ -> b + 1) 0
+  -- Tony's answer:
+  --   foldLeft (const . succ) 0
 
 -- | Map the given function on each element of the list.
 --
@@ -147,10 +149,9 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter _ Nil = Nil
-filter f (x:.xs)
-  | f x = x :. filter f xs
-  | otherwise = filter f xs
+filter f =
+  foldRight (\x xs -> if f x then x :. xs else xs) Nil
+  -- tonys lambda: (\x -> if f x then (x:.) else id)
 
 -- | Append two lists to a new list.
 --
@@ -170,6 +171,7 @@ filter f (x:.xs)
   -> List a
 (++) as bs =
   foldRight (:.) bs as
+  -- tonys answer: flip (foldRight (:.))
 
 infixr 5 ++
 
@@ -243,9 +245,16 @@ seqOptional ::
   -> Optional (List a)
 seqOptional (Empty :. _)     = Empty
 seqOptional Nil              = Full Nil
-seqOptional ((Full x) :. xs) = x `opCons` seqOptional xs
-  where opCons _ Empty = Empty
-        opCons y (Full ys) = Full $ y :. ys
+seqOptional ((Full x) :. xs) = mapOptional (x:.) $ seqOptional xs
+  -- Tony's solution:
+  --   foldRight (twiceOptional (:.)) (Full Nil)
+  -- Two things:
+  --   1. Should have read `Optional` as instructed before doing this
+  --   2. Thanks to non-strict evaluation, foldRight will bail early.
+  --     + recursive case for `foldRight` is `f h (foldRight f b t)`
+  --     + `f = twiceOptional (:.)`
+  --     + `twiceOptional` on an `Empty` always yields `Empty`
+  --     + If `h` is `Empty` in recursive case, then second argument to `f` doesn't need to be evaluated
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -267,10 +276,7 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find _ Nil = Empty
-find f (x :. xs)
-  | f x = Full x
-  | otherwise = find f xs
+find f = foldRight (\a -> if f a then const (Full a) else id) Empty
 
 -- | Determine if the length of the given list is greater than 4.
 --
@@ -288,10 +294,7 @@ find f (x :. xs)
 lengthGT4 ::
   List a
   -> Bool
-lengthGT4 = lengthGT 4
-  where lengthGT 0 (_ :. _) = True
-        lengthGT _ Nil = False
-        lengthGT n (_ :. xs) = lengthGT (n - 1) xs
+lengthGT4 = headOr False . filter id . map ((==4) . fst) . zip infinity
 
 -- | Reverse a list.
 --
