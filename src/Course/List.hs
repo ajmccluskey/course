@@ -277,6 +277,11 @@ find ::
   -> List a
   -> Optional a
 find f = foldRight (\a -> if f a then const (Full a) else id) Empty
+  -- tony's answer - I guess you can NOT use a fold and make it clearer :p
+  -- find p xs =
+  --   case filter f p of
+  --     Nil    -> Empty
+  --     (h:._) -> Full h
 
 -- | Determine if the length of the given list is greater than 4.
 --
