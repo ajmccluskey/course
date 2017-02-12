@@ -378,8 +378,9 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering =
-  error "todo: Course.Applicative#filtering"
+filtering p =
+  foldRight (\a fOfAs -> lift3 f (pure a) fOfAs (p a)) (pure Nil)
+  where f a as b = if b then a :. as else as
 
 -----------------------
 -- SUPPORT LIBRARIES --
