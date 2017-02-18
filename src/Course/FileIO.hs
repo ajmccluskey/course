@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -74,7 +75,7 @@ the contents of c
 main ::
   IO ()
 main =
-  error "todo: Course.FileIO#main"
+   headOr (error "Expected a file path") <$> getArgs >>= run
 
 type FilePath =
   Chars
@@ -83,31 +84,36 @@ type FilePath =
 run ::
   Chars
   -> IO ()
-run =
-  error "todo: Course.FileIO#run"
+run cs =
+      getFile cs
+  >>= (\(_,cs') -> getFiles $ lines cs')
+  >>= printFiles
 
 getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
 getFiles =
-  error "todo: Course.FileIO#getFiles"
+  sequence . (getFile <$>)
 
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
-getFile =
-  error "todo: Course.FileIO#getFile"
+getFile fp =
+  pure (fp, ) <*> readFile fp
 
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
 printFiles =
-  error "todo: Course.FileIO#printFiles"
+  foldLeft (\b -> (b *>) . uncurry printFile) (pure ())
 
 printFile ::
   FilePath
   -> Chars
   -> IO ()
-printFile =
-  error "todo: Course.FileIO#printFile"
-
+printFile fp cs =
+  putStrLn $ unlines (  fp
+                     :. "----------"
+                     :. cs
+                     :. Nil
+                     )
