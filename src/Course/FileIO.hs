@@ -85,9 +85,7 @@ run ::
   Chars
   -> IO ()
 run cs =
-      getFile cs
-  >>= (\(_,cs') -> getFiles $ lines cs')
-  >>= printFiles
+  readFile cs >>= getFiles . lines >>= printFiles
 
 getFiles ::
   List FilePath
@@ -99,7 +97,7 @@ getFile ::
   FilePath
   -> IO (FilePath, Chars)
 getFile fp =
-  pure (fp, ) <*> readFile fp
+  (fp, ) <$> readFile fp
 
 printFiles ::
   List (FilePath, Chars)
@@ -112,8 +110,6 @@ printFile ::
   -> Chars
   -> IO ()
 printFile fp cs =
-  putStrLn $ unlines (  fp
-                     :. "----------"
-                     :. cs
-                     :. Nil
-                     )
+     putStrLn fp
+  >> putStrLn "----------"
+  >> putStrLn cs
