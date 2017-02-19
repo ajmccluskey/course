@@ -104,6 +104,8 @@ printFiles ::
   -> IO ()
 printFiles =
   foldLeft (\b -> (b *>) . uncurry printFile) (pure ())
+  -- Tony's better answer:
+  -- void . sequence . (uncurry printFile <$>)
 
 printFile ::
   FilePath
