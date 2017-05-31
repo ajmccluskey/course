@@ -80,6 +80,9 @@ headOr x Nil      = x
 
 -- | The product of the elements of a list.
 --
+-- >>> product Nil
+-- 1
+--
 -- >>> product (1 :. 2 :. 3 :. Nil)
 -- 6
 --
