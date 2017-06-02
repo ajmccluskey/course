@@ -82,7 +82,7 @@ type FilePath =
 
 -- /Tip:/ Use @getFiles@ and @printFiles@.
 run ::
-  Chars
+  FilePath
   -> IO ()
 run cs =
   readFile cs >>= getFiles . lines >>= printFiles
