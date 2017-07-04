@@ -380,11 +380,11 @@ filtering ::
   -> List a
   -> f (List a)
 filtering p =
-  foldRight (\a fOfAs -> lift3 f (pure a) fOfAs (p a)) (pure Nil)
-  where f a as b = if b then a :. as else as
+  -- foldRight (\a fOfAs -> lift3 f (pure a) fOfAs (p a)) (pure Nil)
+  -- where f a as b = if b then a :. as else as
   -- Cleaner answer from tmorris - extracting f was my doing
-  -- foldRight f (pure Nil)
-  -- where f a = lift2 (\b -> if b then (a:.) else id) (p a)
+  foldRight f (pure Nil)
+  where f a = lift2 (\b -> if b then (a:.) else id) (p a)
 
 -----------------------
 -- SUPPORT LIBRARIES --

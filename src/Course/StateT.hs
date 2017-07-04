@@ -173,17 +173,22 @@ putT ::
 putT =
   StateT . const . return . (,) ()
 
+isInSetT :: (Monad f, Ord a) => a -> StateT (S.Set a) f Bool
+isInSetT a = getT >>= (\s -> if S.member a s
+                        then pure True
+                        else putT (S.insert a s) >> pure False)
+
 -- | Remove all duplicate elements in a `List`.
 --
 -- /Tip:/ Use `filtering` and `State'` with a @Data.Set#Set@.
 --
 -- prop> distinct' xs == distinct' (flatMap (\x -> x :. x :. Nil) xs)
 distinct' ::
-  (Ord a, Num a) =>
+  (Ord a) =>
   List a
   -> List a
-distinct' =
-  error "todo: Course.StateT#distinct'"
+distinct' as =
+   fst . runId $ runStateT (filtering ((not <$>) . isInSetT) as) S.empty
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
@@ -200,8 +205,12 @@ distinctF ::
   (Ord a, Num a) =>
   List a
   -> Optional (List a)
-distinctF =
-  error "todo: Course.StateT#distinctF"
+distinctF as =
+  evalT (filtering f as) S.empty
+  where f a =
+          if a > 100
+          then StateT $ const Empty
+          else isInSetT a
 
 -- | An `OptionalT` is a functor of an `Optional` value.
 data OptionalT f a =
@@ -215,8 +224,8 @@ data OptionalT f a =
 -- >>> runOptionalT $ (+1) <$> OptionalT (Full 1 :. Empty :. Nil)
 -- [Full 2,Empty]
 instance Functor f => Functor (OptionalT f) where
-  (<$>) =
-    error "todo: Course.StateT (<$>)#instance (OptionalT f)"
+  (<$>) f =
+    OptionalT . (<$>) (f <$>) . runOptionalT
 
 -- | Implement the `Applicative` instance for `OptionalT f` given a Applicative f.
 --
