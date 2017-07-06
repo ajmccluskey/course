@@ -97,7 +97,7 @@ getFiles =
   sequence . (getFile <$>)
 
 -- Given a file name, return (file name and file contents).
--- Use @readFile@
+-- Use @readFile@.
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
@@ -105,7 +105,7 @@ getFile fp =
   (fp, ) <$> readFile fp
 
 -- Given a list of (file name and file contents), print each.
--- Use @printFile@
+-- Use @printFile@.
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
@@ -115,7 +115,7 @@ printFiles =
   -- void . sequence . (uncurry printFile <$>)
 
 -- Given the file name, and file contents, print them.
--- Use @putStrLn@
+-- Use @putStrLn@.
 printFile ::
   FilePath
   -> Chars
