@@ -21,7 +21,6 @@ bug-reports:          https://github.com/data61/fp-course/issues
 cabal-version:        >= 1.10
 build-type:           Custom
 extra-source-files:   etc/CONTRIBUTORS,
-                      etc/CREDITS,
                       changelog
 
 source-repository     head
