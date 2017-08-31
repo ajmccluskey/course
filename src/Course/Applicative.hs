@@ -33,24 +33,6 @@ class Functor f => Applicative f where
 
 infixl 4 <*>
 
--- | Witness that all things with (<*>) and pure also have (<$>).
---
--- >>> (+1) <$$> (ExactlyOne 2)
--- ExactlyOne 3
---
--- >>> (+1) <$$> Nil
--- []
---
--- >>> (+1) <$$> (1 :. 2 :. 3 :. Nil)
--- [2,3,4]
-(<$$>) ::
-  Applicative f =>
-  (a -> b)
-  -> f a
-  -> f b
-(<$$>) =
-  (<*>) . pure
-
 -- | Insert into ExactlyOne.
 --
 -- prop> pure x == ExactlyOne x
@@ -89,6 +71,24 @@ instance Applicative List where
     flatMap (\f -> map f as) fs
     -- tony's better answer
     -- flatMap (`map` as) fs
+
+-- | Witness that all things with (<*>) and pure also have (<$>).
+--
+-- >>> (+1) <$$> (ExactlyOne 2)
+-- ExactlyOne 3
+--
+-- >>> (+1) <$$> Nil
+-- []
+--
+-- >>> (+1) <$$> (1 :. 2 :. 3 :. Nil)
+-- [2,3,4]
+(<$$>) ::
+  Applicative f =>
+  (a -> b)
+  -> f a
+  -> f b
+(<$$>) =
+  (<*>) . pure
 
 -- | Insert into an Optional.
 --
