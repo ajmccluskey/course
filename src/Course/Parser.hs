@@ -21,54 +21,101 @@ import Data.Char
 
 type Input = Chars
 
-data ParseError =
-  UnexpectedEof
+data ParseResult a =
+    UnexpectedEof
   | ExpectedEof Input
   | UnexpectedChar Char
-  | Failed
+  | UnexpectedString Chars
+  | Result Input a
   deriving Eq
 
-
-instance Show ParseError where
+instance Show a => Show (ParseResult a) where
   show UnexpectedEof =
     "Unexpected end of stream"
   show (ExpectedEof i) =
     stringconcat ["Expected end of stream, but got >", show i, "<"]
   show (UnexpectedChar c) =
     stringconcat ["Unexpected character: ", show [c]]
-  show Failed =
-    "Parse failed"
-
-data ParseResult a =
-  ErrorResult ParseError
-  | Result Input a
-  deriving Eq
-
-instance Show a => Show (ParseResult a) where
-  show (ErrorResult e) =
-    show e
+  show (UnexpectedString s) =
+    stringconcat ["Unexpected string: ", show s]
   show (Result i a) =
     stringconcat ["Result >", hlist i, "< ", show a]
+  
+instance Functor ParseResult where
+  _ <$> UnexpectedEof =
+    UnexpectedEof
+  _ <$> ExpectedEof i =
+    ExpectedEof i
+  _ <$> UnexpectedChar c =
+    UnexpectedChar c
+  _ <$> UnexpectedString s =
+    UnexpectedString s
+  f <$> Result i a =
+    Result i (f a)
 
 -- Function to determine is a parse result is an error.
 isErrorResult ::
   ParseResult a
   -> Bool
-isErrorResult (ErrorResult _) =
-  True
 isErrorResult (Result _ _) =
   False
+isErrorResult UnexpectedEof =
+  True
+isErrorResult (ExpectedEof _) =
+  True
+isErrorResult (UnexpectedChar _) =
+  True
+isErrorResult (UnexpectedString _) =
+  True
 
-data Parser a = P {
-  parse :: Input -> ParseResult a
-}
+-- | Runs the given function on a successful parse result. Otherwise return the same failing parse result.
+onResult ::
+  ParseResult a
+  -> (Input -> a -> ParseResult b)
+  -> ParseResult b
+onResult UnexpectedEof _ = 
+  UnexpectedEof
+onResult (ExpectedEof i) _ = 
+  ExpectedEof i
+onResult (UnexpectedChar c) _ = 
+  UnexpectedChar c
+onResult (UnexpectedString s)  _ = 
+  UnexpectedString s
+onResult (Result i a) k = 
+  k i a
+
+data Parser a = P (Input -> ParseResult a)
+
+parse ::
+  Parser a
+  -> Input
+  -> ParseResult a
+parse (P p) =
+  p
 
 -- | Produces a parser that always fails with @UnexpectedChar@ using the given character.
 unexpectedCharParser ::
   Char
   -> Parser a
 unexpectedCharParser c =
-  P (\_ -> ErrorResult (UnexpectedChar c))
+  P (\_ -> UnexpectedChar c)
+
+--- | Return a parser that always fails with the given error.
+---
+--- >>> isErrorResult (parse (failed UnexpectedEof) "abc")
+--- True
+failed ::
+  ParseResult a
+  -> Parser a
+failed =
+  P . const
+
+-- | A parser that produces zero or a positive integer.
+natural ::
+  Parser Int
+natural =
+  bindParser (\k -> case read k of Empty  -> failed (UnexpectedString k)
+                                   Full h -> valueParser h) (list1 digit)
 
 -- | Return a parser that always succeeds with the given value and consumes no input.
 --
@@ -79,15 +126,6 @@ valueParser ::
   -> Parser a
 valueParser =
   error "todo: Course.Parser#valueParser"
-
--- | Return a parser that always fails with the given error.
---
--- >>> isErrorResult (parse failed "abc")
--- True
-failed ::
-  Parser a
-failed =
-  error "todo: Course.Parser#failed"
 
 -- | Return a parser that succeeds with a character off the input or fails with an error if the input is empty.
 --
@@ -114,15 +152,6 @@ mapParser ::
   -> Parser b
 mapParser =
   error "todo: Course.Parser#mapParser"
-
--- | This is @mapParser@ with the arguments flipped.
--- It might be more helpful to use this function if you prefer this argument order.
-flmapParser ::
-  Parser a
-  -> (a -> b)
-  -> Parser b
-flmapParser =
-  flip mapParser
 
 -- | Return a parser that puts its input into the given parser and
 --
@@ -151,15 +180,6 @@ bindParser ::
   -> Parser b
 bindParser =
   error "todo: Course.Parser#bindParser"
-
--- | This is @bindParser@ with the arguments flipped.
--- It might be more helpful to use this function if you prefer this argument order.
-flbindParser ::
-  Parser a
-  -> (a -> Parser b)
-  -> Parser b
-flbindParser =
-  flip bindParser
 
 -- | Return a parser that puts its input into the given parser and
 --
@@ -191,13 +211,13 @@ flbindParser =
 -- >>> parse (character ||| valueParser 'v') ""
 -- Result >< 'v'
 --
--- >>> parse (failed ||| valueParser 'v') ""
+-- >>> parse (failed UnexpectedEof ||| valueParser 'v') ""
 -- Result >< 'v'
 --
 -- >>> parse (character ||| valueParser 'v') "abc"
 -- Result >bc< 'a'
 --
--- >>> parse (failed ||| valueParser 'v') "abc"
+-- >>> parse (failed UnexpectedEof ||| valueParser 'v') "abc"
 -- Result >abc< 'v'
 (|||) ::
   Parser a
@@ -296,30 +316,6 @@ digit ::
   Parser Char
 digit =
   error "todo: Course.Parser#digit"
-
--- | Return a parser that produces zero or a positive integer but fails if
---
---   * The input is empty.
---
---   * The input does not produce a valid series of digits
---
--- /Tip:/ Use the @bindParser@, @valueParser@, @list1@, @read@ and @digit@
--- functions.
--- >>> parse natural "123"
--- Result >< 123
---
--- >>> parse natural "123ab"
--- Result >ab< 123
---
--- >>> isErrorResult (parse natural "abc")
--- True
---
--- >>> isErrorResult (parse natural "")
--- True
-natural ::
-  Parser Int
-natural =
-  error "todo: Course.Parser#natural"
 
 --
 -- | Return a parser that produces a space character but fails if
