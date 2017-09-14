@@ -189,8 +189,8 @@ withFocus ::
   (a -> a)
   -> ListZipper a
   -> ListZipper a
-withFocus =
-  error "todo: Course.ListZipper#withFocus"
+withFocus f (ListZipper l x r) =
+  ListZipper l (f x) r
 
 -- | Set the focus of the zipper to the given value.
 -- /Tip:/ Use `withFocus`.
@@ -205,7 +205,7 @@ setFocus ::
   -> ListZipper a
   -> ListZipper a
 setFocus =
-  error "todo: Course.ListZipper#setFocus"
+  withFocus . const
 
 -- A flipped infix alias for `setFocus`. This allows:
 --
@@ -227,8 +227,8 @@ setFocus =
 hasLeft ::
   ListZipper a
   -> Bool
-hasLeft =
-  error "todo: Course.ListZipper#hasLeft"
+hasLeft (ListZipper l _ _) =
+  isEmpty l
 
 -- | Returns whether there are values to the right of focus.
 --
@@ -240,8 +240,8 @@ hasLeft =
 hasRight ::
   ListZipper a
   -> Bool
-hasRight =
-  error "todo: Course.ListZipper#hasRight"
+hasRight (ListZipper _ _ r) =
+  isEmpty r
 
 -- | Seek to the left for a location matching a predicate, starting from the
 -- current one.
@@ -265,9 +265,14 @@ findLeft ::
   (a -> Bool)
   -> ListZipper a
   -> MaybeListZipper a
-findLeft =
-  error "todo: Course.ListZipper#findLeft"
-    
+findLeft p (ListZipper l x r) =
+  let (newRights, l') = break p l
+      r' = toList (ListZipper newRights x r)
+  in
+    case l' of
+      Nil    -> IsNotZ
+      (h:.t) -> IsZ (ListZipper t h r')
+
 -- | Seek to the right for a location matching a predicate, starting from the
 -- current one.
 --
