@@ -90,8 +90,8 @@ instance Functor MaybeListZipper where
 toList ::
   ListZipper a
   -> List a
-toList =
-  error "todo: Course.ListZipper#toList"
+toList (ListZipper l x r) =
+  foldLeft (flip (:.)) (x :. r) l
 
 -- | Convert the given (maybe) zipper back to a list.
 toListZ ::
@@ -127,8 +127,10 @@ fromList (h:.t) =
 toOptional ::
   MaybeListZipper a
   -> Optional (ListZipper a)
-toOptional =
-  error "todo: Course.ListZipper#toOptional"
+toOptional IsNotZ =
+  Empty
+toOptional (IsZ l) =
+  Full l
 
 zipper ::
   [a]
