@@ -77,6 +77,31 @@ instance Functor MaybeListZipper where
   (<$>) f (IsZ l) =
     IsZ (f <$> l)
 
+-- | Convert the given zipper back to a list.
+--
+-- >>> toList <$> toOptional (fromList Nil)
+-- Empty
+--
+-- >>> toList (ListZipper Nil 1 (2:.3:.4:.Nil))
+-- [1,2,3,4]
+--
+-- >>> toList (ListZipper (3:.2:.1:.Nil) 4 (5:.6:.7:.Nil))
+-- [1,2,3,4,5,6,7]
+toList ::
+  ListZipper a
+  -> List a
+toList =
+  error "todo: Course.ListZipper#toList"
+
+-- | Convert the given (maybe) zipper back to a list.
+toListZ ::
+  MaybeListZipper a
+  -> List a
+toListZ IsNotZ =
+  Nil
+toListZ (IsZ z) =
+  toList z
+
 -- | Create a `MaybeListZipper` positioning the focus at the head.
 --
 -- ->>> fromList (1 :. 2 :. 3 :. Nil)
@@ -150,31 +175,6 @@ asMaybeZipper f (IsZ z) =
   -> MaybeListZipper a
 (-<<) =
   asMaybeZipper
-
--- | Convert the given zipper back to a list.
---
--- >>> toList <$> toOptional (fromList Nil)
--- Empty
---
--- >>> toList (ListZipper Nil 1 (2:.3:.4:.Nil))
--- [1,2,3,4]
---
--- >>> toList (ListZipper (3:.2:.1:.Nil) 4 (5:.6:.7:.Nil))
--- [1,2,3,4,5,6,7]
-toList ::
-  ListZipper a
-  -> List a
-toList =
-  error "todo: Course.ListZipper#toList"
-
--- | Convert the given (maybe) zipper back to a list.
-toListZ ::
-  MaybeListZipper a
-  -> List a
-toListZ IsNotZ =
-  Nil
-toListZ (IsZ z) =
-  toList z
 
 -- | Update the focus of the zipper with the given function on the current focus.
 --
