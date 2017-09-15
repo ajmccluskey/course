@@ -295,8 +295,14 @@ findRight ::
   (a -> Bool)
   -> ListZipper a
   -> MaybeListZipper a
-findRight =
-  error "todo: Course.ListZipper#findRight"
+findRight p (ListZipper l x r) =
+  let (newLefts, r') = break p r
+      l' = toList (ListZipper newLefts x l)
+  in
+    case r' of
+      Nil    -> IsNotZ
+      (h:.t) -> IsZ (ListZipper l' h t)
+
 
 -- | Move the zipper left, or if there are no elements to the left, go to the far right.
 --
@@ -308,8 +314,13 @@ findRight =
 moveLeftLoop ::
   ListZipper a
   -> ListZipper a
-moveLeftLoop =
-  error "todo: Course.ListZipper#moveLeftLoop"
+moveLeftLoop (ListZipper l x r) =
+  case l of
+    (h:.t) -> ListZipper t h (x:.r)
+    Nil    ->
+      -- List is guaranteed to have a head, given ListZipper _must_ have at least one element
+      let (x':.l') = foldLeft (flip (:.)) (x:.Nil) r
+       in ListZipper l' x' Nil
 
 -- | Move the zipper right, or if there are no elements to the right, go to the far left.
 --
@@ -321,8 +332,10 @@ moveLeftLoop =
 moveRightLoop ::
   ListZipper a
   -> ListZipper a
-moveRightLoop =
-  error "todo: Course.ListZipper#moveRightLoop"
+moveRightLoop lz@(ListZipper l x r) =
+  case r of
+    (h:.t) -> ListZipper (x:.l) h t
+    Nil    -> let (x':.r') = toList lz in ListZipper Nil x' r'
 
 -- | Move the zipper one position to the left.
 --
@@ -334,8 +347,8 @@ moveRightLoop =
 moveLeft ::
   ListZipper a
   -> MaybeListZipper a
-moveLeft =
-  error "todo: Course.ListZipper#moveLeft"
+moveLeft (ListZipper Nil _ _) = IsNotZ
+moveLeft lz = IsZ $ moveLeftLoop lz
 
 -- | Move the zipper one position to the right.
 --
@@ -347,8 +360,8 @@ moveLeft =
 moveRight ::
   ListZipper a
   -> MaybeListZipper a
-moveRight =
-  error "todo: Course.ListZipper#moveRight"
+moveRight (ListZipper _ _ Nil) = IsNotZ
+moveRight lz                   = IsZ $ moveRightLoop lz
 
 -- | Swap the current focus with the value to the left of focus.
 --
