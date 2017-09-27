@@ -197,7 +197,7 @@ bindParser apb pa =
 --
 --   * if that parser fails with an error the returned parser fails with that error.
 --
--- /Tip:/ Use @bindParser@ or @flbindParser@.
+-- /Tip:/ Use @bindParser@ or @>>=@.
 --
 -- >>> parse (character >>> valueParser 'v') "abc"
 -- Result >bc< 'v'
