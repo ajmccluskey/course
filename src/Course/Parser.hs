@@ -440,7 +440,7 @@ thisMany =
 ageParser ::
   Parser Int
 ageParser =
-  error "todo: Course.Parser#ageParser"
+  natural
 
 -- | Write a parser for Person.firstName.
 -- /First Name: non-empty string that starts with a capital letter and is followed by zero or more lower-case letters/
@@ -455,7 +455,7 @@ ageParser =
 firstNameParser ::
   Parser Chars
 firstNameParser =
-  error "todo: Course.Parser#firstNameParser"
+  (:.) <$> upper <*> list lower
 
 -- | Write a parser for Person.surname.
 --
@@ -477,7 +477,8 @@ firstNameParser =
 surnameParser ::
   Parser Chars
 surnameParser =
-  error "todo: Course.Parser#surnameParser"
+  let lowers = flatten <$> sequenceParser (thisMany 5 lower :. list lower :. Nil)
+   in (:.) <$> upper <*> lowers
 
 -- | Write a parser for Person.smoker.
 --
@@ -496,7 +497,7 @@ surnameParser =
 smokerParser ::
   Parser Char
 smokerParser =
-  error "todo: Course.Parser#smokerParser"
+  is 'y' ||| is 'Y' ||| is 'n' ||| is 'N'
 
 -- | Write part of a parser for Person#phoneBody.
 -- This parser will only produce a string of digits, dots or hyphens.
@@ -518,7 +519,7 @@ smokerParser =
 phoneBodyParser ::
   Parser Chars
 phoneBodyParser =
-  error "todo: Course.Parser#phoneBodyParser"
+  list (digit ||| is '.' ||| is '-')
 
 -- | Write a parser for Person.phone.
 --
@@ -540,7 +541,8 @@ phoneBodyParser =
 phoneParser ::
   Parser Chars
 phoneParser =
-  error "todo: Course.Parser#phoneParser"
+  let digits = (:.) <$> digit <*> phoneBodyParser
+   in digits <* (is '#' >>> valueParser Nil)
 
 -- | Write a parser for Person.
 --
@@ -589,7 +591,11 @@ phoneParser =
 personParser ::
   Parser Person
 personParser =
-  error "todo: Course.Parser#personParser"
+  Person <$> ageParser
+         <*> spaces1 >>> firstNameParser
+         <*> spaces1 >>> surnameParser
+         <*> spaces1 >>> smokerParser
+         <*> spaces1 >>> phoneParser
 
 -- Make sure all the tests pass!
 
