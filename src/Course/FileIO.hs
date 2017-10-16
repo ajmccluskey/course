@@ -127,6 +127,5 @@ printFile ::
   -> Chars
   -> IO ()
 printFile fp cs =
-     putStrLn fp
-  >> putStrLn "----------"
+     putStrLn ("============ " ++ fp)
   >> putStrLn cs
