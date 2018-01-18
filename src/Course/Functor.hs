@@ -41,7 +41,7 @@ instance Functor ExactlyOne where
     (a -> b)
     -> ExactlyOne a
     -> ExactlyOne b
-  (<$>) = mapId
+  (<$>) = mapExactlyOne
 
 -- | Maps a function on the List functor.
 --
