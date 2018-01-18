@@ -102,7 +102,7 @@ state' ::
   (s -> (a, s))
   -> State' s a
 state' =
-  StateT . ((<$>) Id)
+  StateT . ((<$>) ExactlyOne)
 
 -- | Provide an unwrapper for `State'` values.
 --
@@ -113,7 +113,7 @@ runState' ::
   -> s
   -> (a, s)
 runState' (StateT f) =
-  runId . f
+  runExactlyOne . f
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting state.
 execT ::
@@ -130,7 +130,7 @@ exec' ::
   -> s
   -> s
 exec' state =
-  runId . execT state
+  runExactlyOne . execT state
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting value.
 evalT ::
@@ -147,7 +147,7 @@ eval' ::
   -> s
   -> a
 eval' state =
-  runId . evalT state
+  runExactlyOne . evalT state
 
 -- | A `StateT` where the state also distributes into the produced value.
 --
@@ -188,7 +188,7 @@ distinct' ::
   List a
   -> List a
 distinct' as =
-   fst . runId $ runStateT (filtering ((not <$>) . isInSetT) as) S.empty
+   fst . runExactlyOne $ runStateT (filtering ((not <$>) . isInSetT) as) S.empty
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
