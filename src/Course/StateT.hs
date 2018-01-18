@@ -183,7 +183,7 @@ distinct' ::
   List a
   -> List a
 distinct' =
-  error "todo: Course.StateT#distinct'"
+  (`eval` S.empty) . filtering ((not <$>) . isInSet)
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
