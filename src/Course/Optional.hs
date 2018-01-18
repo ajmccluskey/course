@@ -85,7 +85,7 @@ bindOptional _ Empty =
   Optional a
   -> Optional a
   -> Optional a
-(<+>) fa@(Full a) _ =
+(<+>) fa@(Full _) _ =
   fa
 (<+>) _ fa =
   fa
