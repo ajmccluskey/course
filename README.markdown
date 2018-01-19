@@ -8,16 +8,16 @@
 
 #### Special note 1
 
-If you have arrived here by https://github.com/tonymorris/fp-course and you are
-looking for the *exercises* (not the answers), please go to
-https://github.com/data61/fp-course
+If you have arrived here by https://github.com/data61/fp-course and you are
+looking for the *answers* (not the exercises), please go to https://github.com/tonymorris/fp-course
 
 #### Special note 2
 
-Since February 2017, this repository is no longer hosted at
-https://github.com/NICTA/course which is deprecated. Data61 replaces what was
-NICTA since July 2016. The new repository is located at
-https://github.com/data61/fp-course
+As of February 2017, this repository is taking the place of the repository hosted at
+https://github.com/NICTA/course which is deprecated. 
+
+Data61 replaces what was NICTA since July 2016. The new repository is located at
+https://github.com/data61/fp-course.
 
 #### Introduction
 
@@ -49,16 +49,19 @@ however, your first post might be moderated. This is simply to prevent spam.
    programming course material. This mailing list is not owned by Data61, but is
    run by others who are keen to share ideas relating to the course.
 
-3. \#scalaz [on Freenode](irc://irc.freenode.net/#scalaz) is an IRC channel that is operated
+3. \#nicta-course [on Freenode](irc://irc.freenode.net/#nicta-course) is an IRC channel that
+   is operated by others who are going through this course material on their
+   own time and effort.
+
+4. \#qfpl [on Freenode](irc://irc.freenode.net/#qfpl) is the IRC channel of the
+   Queensland Functional Programming Lab - the team that runs the course in Brisbane.
+
+5. \#scalaz [on Freenode](irc://irc.freenode.net/#scalaz) is an IRC channel that is operated
    by others who are keen to share ideas relating to functional programming in
    general. Most of the participants of this channel have completed the Data61
    functional programming course to some extent. They are in various timezones
    and share a passion for functional programming, so may be able to provide
    relatively quick assistance with questions.
-
-4. \#nicta-course [on Freenode](irc://irc.freenode.net/#nicta-course) is an IRC channel that
-   is operated by others who are going through this course material on their
-   own time and effort.
 
 ### Getting Started
 
@@ -158,11 +161,12 @@ available in this repository for your convenience.
    Using tab characters in Haskell can lead to confusing error messages.
    GHC will give you a warning if your program contains a tab character.
 
+6. Do not use the stack build tool. It does not work.
+
 ### Running the tests
 
-Tests are available both as a [tasty](https://hackage.haskell.org/package/tasty)
-test suite, and as doctests. Tasty is the recommended and supported method,
-however you're free to use the doctests if you prefer.
+Tests are available as a [tasty](https://hackage.haskell.org/package/tasty)
+test suite.
 
 #### tasty
 
@@ -213,20 +217,8 @@ tab completion, so you can save yourself some typing.
 #### doctest
 
 The doctest tests are a mirror of the tasty tests that reside in comments
-alongside the code. They are executable, however this is not supported. Examples
-begin with `>>>` while properties begin with `prop>`.
-
-Executing the tests is done with the `doctest` executable, which you may install
-using:
-
-    > cabal install doctest
-
-Once installed, you may use doctest to run the doctests for a given module:
-
-    > doctest -isrc -Wall -fno-warn-type-defaults <filename.hs>
-
-Binding this command to a keyboard shortcut in your favourite editor, such that
-tests for the current file are executed, is an exercise left to the reader.
+alongside the code. They are not executable, but examples can be copied into
+GHCI. Examples begin with `>>>` while properties begin with `prop>`.
 
 ### Progression
 
@@ -365,7 +357,7 @@ covered first.
   * always lower-case 'a'..'z'
   * aka generics, templates C++, parametric polymorphism
 * running the tests
-  * `doctest`
+  * `cabal test`
 
 ### Parser grammar assistance
 

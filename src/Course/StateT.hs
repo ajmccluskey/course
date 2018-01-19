@@ -154,7 +154,7 @@ eval' state =
 -- >>> (runStateT (getT :: StateT Int List Int) 3)
 -- [(3,3)]
 getT ::
-  Monad f =>
+  Applicative f =>
   StateT s f s
 getT =
   StateT $ pure . join (,)
@@ -167,7 +167,7 @@ getT =
 -- >>> runStateT (putT 2 :: StateT Int List ()) 0
 -- [((),2)]
 putT ::
-  Monad f =>
+  Applicative f =>
   s
   -> StateT s f ()
 putT =

@@ -18,7 +18,7 @@ Useful Functions --
 
   getArgs :: IO (List Chars)
   putStrLn :: Chars -> IO ()
-  readFile :: Chars -> IO Chars
+  readFile :: FilePath -> IO Chars
   lines :: Chars -> List Chars
   void :: IO a -> IO ()
 
@@ -82,9 +82,6 @@ main ::
   IO ()
 main =
    headOr (error "Expected a file path") <$> getArgs >>= run
-
-type FilePath =
-  Chars
 
 -- Given a file name, read it and for each line in that file, read and print contents of each.
 -- Use @getFiles@ and @printFiles@.
