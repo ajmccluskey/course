@@ -201,7 +201,13 @@ distinctF ::
   List a
   -> Optional (List a)
 distinctF =
-  error "todo: Course.StateT#distinctF"
+  let
+    notInSet a =
+      getT >>= \s -> bool (putT (S.insert a s) >> pure True) (pure False) (S.member a s)
+    gt a =
+      bool (pure a) (StateT (const Empty)) (a > 100)
+  in
+    (`evalT` S.empty) . filtering ((=<<) notInSet . gt)
 
 -- | An `OptionalT` is a functor of an `Optional` value.
 data OptionalT f a =
