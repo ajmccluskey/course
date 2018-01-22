@@ -72,7 +72,7 @@ instance Applicative List where
     -> List a
     -> List b
   fs <*> as =
-    flatMap (\f -> map f as) fs
+    flatMap (`map` as) fs
     -- tony's better answer
     -- flatMap (`map` as) fs
 
