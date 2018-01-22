@@ -148,7 +148,7 @@ findM ::
 findM p =
   foldRight g (pure Empty)
   where
-    g a b = (p a) >>= (\b' -> if b' then pure (Full a) else b)
+    g a b = p a >>= (\b' -> if b' then pure (Full a) else b)
 
 -- | Find the first element in a `List` that appears earlier in the list.
 -- It is possible that no element repeats, hence an `Optional` result.
