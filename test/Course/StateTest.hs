@@ -15,14 +15,14 @@ import           Test.Tasty.QuickCheck    (testProperty)
 import           Course.Applicative       (pure, (<*>))
 import           Course.Core
 import           Course.Functor           ((<$>))
+import           Course.Gens              (forAllLists)
 import           Course.List              (List (..), filter, flatMap, hlist,
                                            length, listh, span, (++))
-import           Course.Gens          (forAllLists)
 import           Course.Monad
 import           Course.Optional          (Optional (..))
 import           Course.State             (State (..), distinct, eval, exec,
                                            findM, firstRepeat, get, isHappy,
-                                           put, put, runState)
+                                           put, runState)
 
 test_State :: TestTree
 test_State =
@@ -99,7 +99,7 @@ firstRepeatTest =
   testGroup "firstRepeat" [
     testCase "firstRepeat example" $
       firstRepeat (1:.2:.3:.2:.4:.1:.Nil) @?= Full 2
-  , testProperty "finds repeats" $ forAllShrink genIntegerList shrinkList (\xs ->
+  , testProperty "finds repeats" $ forAllLists (\xs ->
       case firstRepeat xs of
         Empty ->
           let xs' = hlist xs
