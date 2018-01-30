@@ -221,8 +221,8 @@ data OptionalT f a =
 -- >>> runOptionalT $ (+1) <$> OptionalT (Full 1 :. Empty :. Nil)
 -- [Full 2,Empty]
 instance Functor f => Functor (OptionalT f) where
-  (<$>) =
-    error "todo: Course.StateT (<$>)#instance (OptionalT f)"
+  (<$>) f =
+    OptionalT . (<$>) ((<$>) f) . runOptionalT
 
 -- | Implement the `Applicative` instance for `OptionalT f` given a Applicative f.
 --
@@ -230,7 +230,7 @@ instance Functor f => Functor (OptionalT f) where
 -- [Full 2,Empty,Full 3,Empty]
 instance Applicative f => Applicative (OptionalT f) where
   pure =
-    error "todo: Course.StateT pure#instance (OptionalT f)"
+    OptionalT . pure . Full
   (<*>) =
     error "todo: Course.StateT (<*>)#instance (OptionalT f)"
 
