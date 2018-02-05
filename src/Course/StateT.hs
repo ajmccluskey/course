@@ -222,7 +222,7 @@ data OptionalT f a =
 -- [Full 2,Empty]
 instance Functor f => Functor (OptionalT f) where
   (<$>) f =
-    OptionalT . (<$>) ((<$>) f) . runOptionalT
+    OptionalT . (<$>) (f <$>) . runOptionalT
 
 -- | Implement the `Applicative` instance for `OptionalT f` given a Applicative f.
 --
