@@ -3,6 +3,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 
 module Course.StateT where
 
@@ -202,12 +203,14 @@ distinctF ::
   -> Optional (List a)
 distinctF =
   let
-    notInSet a =
-      getT >>= \s -> bool (putT (S.insert a s) >> pure True) (pure False) (S.member a s)
     gt a =
       bool (pure a) (StateT (const Empty)) (a > 100)
   in
     (`evalT` S.empty) . filtering ((=<<) notInSet . gt)
+
+notInSet :: (Monad f, Ord a) => a -> StateT (S.Set a) f Bool
+notInSet a =
+  getT >>= \s -> bool (putT (S.insert a s) >> pure True) (pure False) (S.member a s)
 
 -- | An `OptionalT` is a functor of an `Optional` value.
 data OptionalT f a =
@@ -307,9 +310,16 @@ log1 =
 --
 -- >>> distinctG $ listh [1,2,3,2,6,106]
 -- Logger ["even number: 2","even number: 2","even number: 6","aborting > 100: 106"] Empty
-distinctG ::
+distinctG :: forall a.
   (Integral a, Show a) =>
   List a
   -> Logger Chars (Optional (List a))
 distinctG =
-  error "todo: Course.StateT#distinctG"
+  let
+    log m a = StateT (\s -> OptionalT . log1 m . ((,s) <$>) $ a)
+    abort = (`log` Empty) . ("aborting > 100: " ++) . show'
+    gt = bool <$> pure <*> abort <*> (> 100)
+    logIfEven = lift3 bool pure logEven even
+    logEven = lift2 log (("even number: " ++) . show') Full
+  in
+    runOptionalT . (`evalT` S.empty) . filtering (notInSet <=< logIfEven <=< gt)
