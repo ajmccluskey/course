@@ -5,6 +5,7 @@
 module Test.Mini where
 
 import Data.Bool (bool)
+import Data.Foldable (traverse_)
 
 class Tester t where
   data TestName t
@@ -14,7 +15,7 @@ class Tester t where
   testGroup :: TestName t -> [TestTree t] -> TestTree t
   testCase :: TestName t -> Assertion t -> TestTree t
   (@?=) :: (Eq a, Show a) => a -> a -> Assertion t
-  test' :: TestTree t -> [TestTree t]
+  test' :: TestTree t -> [TestName t]
   test :: TestTree t -> IO ()
 
 data CourseTester =
@@ -43,6 +44,7 @@ instance Tester CourseTester where
   a @?= b =
     CTAssertion (a == b)
 
-  test' t@(CTTree t') = case t' of
-    (Single _ a) -> bool [t] [] a
-    (Tree _ ts) ->
+  test' (CTTree t) =
+    CTName <$> testCourseTree' t
+
+  test = traverse_ (\(CTName s) -> putStrLn s) . test'
