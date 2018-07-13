@@ -2,7 +2,6 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE ImplicitPrelude        #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
--- {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE TypeFamilies           #-}
 
 -- | The smallest possible test library interface and instance that will run the current test suite.
@@ -15,7 +14,6 @@ import           Data.Bool         (bool)
 import           Data.Foldable     (traverse_)
 import           Data.List         (intercalate)
 import           Data.Monoid       ((<>))
--- import Prelude
 import           Data.String       (IsString, fromString)
 
 -- | Test interface required to run course tests
@@ -47,8 +45,15 @@ testCourseTree' =
       case t' of
       (Single s' a) -> do
         r <- try a :: IO (Either SomeException ())
+        let
+          qualifiedName = bool (intercalate "." [s,s']) s' (null s)
+          quote x = "'" <> x <> "'"
+          printFailure e =
+            putStrLn (quote qualifiedName <> " failed:")
+            >> print e
+            >> putStrLn ""
         case r of
-          Left e   -> print e >> pure [intercalate "." [s, s']]
+          Left e   -> printFailure e >> (pure . pure) qualifiedName
           Right () -> pure []
       (Tree s' ts) -> foldMap (go s') ts
 
