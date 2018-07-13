@@ -18,7 +18,7 @@ import           Course.List           (List (..), filter, length, listh,
                                         product, sum)
 import           Course.Optional       (Optional (..))
 
-test_Applicative :: TestTree
+test_Applicative :: MiniTestTree
 test_Applicative =
   testGroup "Applicative" [
    exactlyOneTest
@@ -36,7 +36,7 @@ test_Applicative =
   , filteringTest
   ]
 
-exactlyOneTest :: TestTree
+exactlyOneTest :: MiniTestTree
 exactlyOneTest =
   testGroup "ExactlyOne instance" [
     testProperty "pure == ExactlyOne" $
@@ -45,7 +45,7 @@ exactlyOneTest =
       ExactlyOne (+ 10) <*> ExactlyOne 8 @?= ExactlyOne 18
   ]
 
-listTest :: TestTree
+listTest :: MiniTestTree
 listTest =
   testGroup "List instance" [
     testProperty "pure" $
@@ -54,7 +54,7 @@ listTest =
       (+1) :. (*2) :. Nil <*> listh [1,2,3] @?= listh [2,3,4,2,4,6]
   ]
 
-haveFmapTest :: TestTree
+haveFmapTest :: MiniTestTree
 haveFmapTest =
   testGroup "lift1" [
     testCase "ExactlyOne" $
@@ -65,7 +65,7 @@ haveFmapTest =
       (lift1 (+ 1) (listh [1,2,3])) @?= listh [2,3,4]
   ]
 
-optionalTest :: TestTree
+optionalTest :: MiniTestTree
 optionalTest =
   testGroup "Optional instance" [
     testProperty "pure" $
@@ -78,7 +78,7 @@ optionalTest =
       Full (+8) <*> Empty @?= Empty
   ]
 
-functionTest :: TestTree
+functionTest :: MiniTestTree
 functionTest =
   testGroup "Function instance" [
     testCase "addition" $
@@ -95,7 +95,7 @@ functionTest =
       \(x :: Integer) (y :: Integer) -> pure x y == x
   ]
 
-lift2Test :: TestTree
+lift2Test :: MiniTestTree
 lift2Test =
   testGroup "lift2" [
     testCase "+ over ExactlyOne" $
@@ -112,7 +112,7 @@ lift2Test =
       lift2 (+) length sum (listh [4,5,6]) @?= 18
   ]
 
-lift3Test :: TestTree
+lift3Test :: MiniTestTree
 lift3Test =
   testGroup "lift3" [
     testCase "+ over ExactlyOne" $
@@ -132,7 +132,7 @@ lift3Test =
       lift3 (\a b c -> a + b + c) length sum product (listh [4,5,6]) @?= 138
   ]
 
-lift4Test :: TestTree
+lift4Test :: MiniTestTree
 lift4Test =
   testGroup "lift4" [
     testCase "+ over ExactlyOne" $
@@ -152,7 +152,7 @@ lift4Test =
       lift4 (\a b c d -> a + b + c + d) length sum product (sum . filter even) (listh [4,5,6]) @?= 148
   ]
 
-rightApplyTest :: TestTree
+rightApplyTest :: MiniTestTree
 rightApplyTest =
   testGroup "rightApply" [
     testCase "*> over List" $
@@ -172,7 +172,7 @@ rightApplyTest =
       \x y -> (Full x :: Optional Integer) *> (Full y :: Optional Integer) == Full y
   ]
 
-leftApplyTest :: TestTree
+leftApplyTest :: MiniTestTree
 leftApplyTest =
   testGroup "leftApply" [
     testCase "<* over List" $
@@ -192,7 +192,7 @@ leftApplyTest =
       \x y -> Full (x :: Integer) <* Full (y :: Integer) == Full x
   ]
 
-sequenceTest :: TestTree
+sequenceTest :: MiniTestTree
 sequenceTest =
   testGroup "sequence" [
     testCase "ExactlyOne" $
@@ -207,7 +207,7 @@ sequenceTest =
       sequence ((*10) :. (+2) :. Nil) 6 @?= (listh [60,8])
   ]
 
-replicateATest :: TestTree
+replicateATest :: MiniTestTree
 replicateATest =
   testGroup "replicateA" [
     testCase "ExactlyOne" $
@@ -225,7 +225,7 @@ replicateATest =
        in replicateA 3 ('a' :. 'b' :. 'c' :. Nil) @?= expected
   ]
 
-filteringTest :: TestTree
+filteringTest :: MiniTestTree
 filteringTest =
   testGroup "filtering" [
     testCase "ExactlyOne" $

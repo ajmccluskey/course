@@ -24,7 +24,7 @@ import           Course.State             (State (..), distinct, eval, exec,
                                            findM, firstRepeat, get, isHappy,
                                            put, put, runState)
 
-test_State :: TestTree
+test_State :: MiniTestTree
 test_State =
   testGroup "State" [
     execTest
@@ -40,30 +40,30 @@ test_State =
   , isHappyTest
   ]
 
-execTest :: TestTree
+execTest :: MiniTestTree
 execTest =
   testProperty "exec" $
     \(Fun _ f :: Fun Integer (Integer, Integer)) s -> exec (State f) s == snd (runState (State f) s)
 
-evalTest :: TestTree
+evalTest :: MiniTestTree
 evalTest =
   testProperty "eval" $
     \(Fun _ f :: Fun Integer (Integer, Integer)) s -> eval (State f) s == fst (runState (State f) s)
 
-getTest :: TestTree
+getTest :: MiniTestTree
 getTest =
   testCase "get" $ runState get 0 @?= (0,0)
 
-putTest :: TestTree
+putTest :: MiniTestTree
 putTest =
   testCase "put" $ runState (put 1) 0 @?= ((),1)
 
-functorTest :: TestTree
+functorTest :: MiniTestTree
 functorTest =
   testCase "(<$>)" $
     runState ((+1) <$> State (\s -> (9, s * 2))) 3 @?= (10,6)
 
-applicativeTest :: TestTree
+applicativeTest :: MiniTestTree
 applicativeTest =
   testGroup "Applicative" [
     testCase "pure" $ runState (pure 2) 0 @?= (2,0)
@@ -73,7 +73,7 @@ applicativeTest =
        in runState state [] @?= (10,["apple","banana"])
   ]
 
-monadTest :: TestTree
+monadTest :: MiniTestTree
 monadTest =
   testGroup "Monad" [
     testCase "(=<<)" $
@@ -83,7 +83,7 @@ monadTest =
        in runState (modify (+1) >>= \() -> modify (*2)) 7  @?= ((),16)
   ]
 
-findMTest :: TestTree
+findMTest :: MiniTestTree
 findMTest =
   testGroup "findM" [
     testCase "find 'c' in 'a'..'h'" $
@@ -94,7 +94,7 @@ findMTest =
        in runState (findM p $ listh ['a'..'h']) 0 @?= (Empty,8)
   ]
 
-firstRepeatTest :: TestTree
+firstRepeatTest :: MiniTestTree
 firstRepeatTest =
   testGroup "firstRepeat" [
     testProperty "finds repeats" $ forAllLists (\xs ->
@@ -115,7 +115,7 @@ firstRepeatTest =
     )
   ]
 
-distinctTest :: TestTree
+distinctTest :: MiniTestTree
 distinctTest =
   testGroup "distinct" [
     testProperty "No repeats after distinct" $
@@ -124,7 +124,7 @@ distinctTest =
       forAllLists (\xs -> distinct xs == distinct (flatMap (\x -> x :. x :. Nil) xs))
   ]
 
-isHappyTest :: TestTree
+isHappyTest :: MiniTestTree
 isHappyTest =
   testGroup "isHappy" [
     testCase "4" $ isHappy 4 @?= False
