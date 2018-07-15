@@ -6,9 +6,9 @@ module Course.ListTest where
 import qualified Prelude               as P (length)
 
 import           Test.QuickCheck       (forAllShrink)
-import           Test.Tasty            (TestTree, testGroup)
-import           Test.Tasty.HUnit      (testCase, (@?=))
 import           Test.Tasty.QuickCheck (testProperty)
+
+import           Test.Mini             (MiniTestTree, Tester (..))
 
 import           Course.Core
 import           Course.Gens           (forAllLists, genIntegerAndList, genList,

@@ -3,8 +3,7 @@
 
 module Course.MonadTest where
 
-import           Test.Tasty        (TestTree, testGroup)
-import           Test.Tasty.HUnit  (testCase, (@?=))
+import Test.Mini (MiniTestTree, Tester (..))
 
 import           Course.Core
 import           Course.ExactlyOne (ExactlyOne (..))

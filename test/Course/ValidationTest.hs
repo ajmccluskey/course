@@ -5,14 +5,11 @@
 
 module Course.ValidationTest where
 
-import qualified Prelude               as P (either, fmap)
-import Test.Mini (MiniTestTree, Tester (..))
+import qualified Prelude           as P (either, fmap)
+import           Test.Mini         (MiniTestTree, Tester (..))
 
 import           Course.Core
 import           Course.Validation
-
-instance Arbitrary a => Arbitrary (Validation a) where
-  arbitrary = P.fmap (P.either Error Value) arbitrary
 
 test_Validation :: MiniTestTree
 test_Validation =

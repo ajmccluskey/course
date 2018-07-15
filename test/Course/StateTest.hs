@@ -8,21 +8,21 @@ import           Data.List                (nub)
 import qualified Prelude                  as P ((++))
 
 import           Test.QuickCheck.Function (Fun (..))
-import           Test.Tasty               (TestTree, testGroup)
-import           Test.Tasty.HUnit         (testCase, (@?=))
 import           Test.Tasty.QuickCheck    (testProperty)
+
+import           Test.Mini                (MiniTestTree, Tester (..))
 
 import           Course.Applicative       (pure, (<*>))
 import           Course.Core
 import           Course.Functor           ((<$>))
+import           Course.Gens              (forAllLists)
 import           Course.List              (List (..), filter, flatMap, hlist,
                                            length, listh, span, (++))
-import           Course.Gens          (forAllLists)
 import           Course.Monad
 import           Course.Optional          (Optional (..))
 import           Course.State             (State (..), distinct, eval, exec,
                                            findM, firstRepeat, get, isHappy,
-                                           put, put, runState)
+                                           put, runState)
 
 test_State :: MiniTestTree
 test_State =

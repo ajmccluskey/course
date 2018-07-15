@@ -5,8 +5,7 @@
 module Course.JsonParserTest where
 
 import           Data.Ratio        ((%))
-import           Test.Tasty        (TestTree, testGroup)
-import           Test.Tasty.HUnit  (testCase, (@?=))
+import           Test.Mini         (MiniTestTree, Tester (..))
 
 import           Course.Core
 import           Course.JsonParser (jsonArray, jsonFalse, jsonNull, jsonNumber,

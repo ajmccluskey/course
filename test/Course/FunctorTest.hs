@@ -4,9 +4,7 @@
 
 module Course.FunctorTest where
 
-import           Test.Tasty            (TestTree, testGroup)
-import           Test.Tasty.HUnit      (testCase, (@?=))
-import           Test.Tasty.QuickCheck (testProperty)
+import Test.Mini (MiniTestTree, Tester (..))
 
 import           Course.Core
 import           Course.ExactlyOne     (ExactlyOne (..))

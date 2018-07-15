@@ -4,13 +4,12 @@
 
 module Course.ApplicativeTest where
 
-import           Test.Tasty            (TestTree, testGroup)
-import           Test.Tasty.HUnit      (testCase, (@?=))
+import           Test.Mini             (MiniTestTree, Tester (..))
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           Course.Applicative    (filtering, lift2, lift3, lift4, pure,
-                                        replicateA, sequence, (*>), lift1,
-                                        (<*), (<*>))
+import           Course.Applicative    (filtering, lift1, lift2, lift3, lift4,
+                                        pure, replicateA, sequence, (*>), (<*),
+                                        (<*>))
 import           Course.Core
 import           Course.ExactlyOne     (ExactlyOne (..))
 import           Course.Functor        ((<$>))

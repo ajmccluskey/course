@@ -3,12 +3,11 @@
 
 module Course.OptionalTest where
 
-import           Test.Tasty       (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, (@?=))
+import           Test.Mini       (MiniTestTree, Tester (..))
 
 import           Course.Core
-import           Course.Optional  (Optional (..), bindOptional, mapOptional,
-                                   (<+>), (??))
+import           Course.Optional (Optional (..), bindOptional, mapOptional,
+                                  (<+>), (??))
 
 test_Optional :: MiniTestTree
 test_Optional =

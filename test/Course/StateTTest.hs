@@ -5,8 +5,7 @@ module Course.StateTTest where
 
 import qualified Prelude               as P (String, (++))
 
-import           Test.Tasty            (TestTree, testGroup)
-import           Test.Tasty.HUnit      (testCase, (@?=))
+import           Test.Mini             (MiniTestTree, Tester (..))
 import           Test.Tasty.QuickCheck (testProperty)
 
 import           Course.Applicative    (pure, (<*>))
