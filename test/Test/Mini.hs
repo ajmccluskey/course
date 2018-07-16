@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE ImplicitPrelude        #-}
@@ -16,30 +17,35 @@ import           Data.Foldable     (traverse_)
 import           Data.List         (intercalate)
 import           Data.Monoid       ((<>))
 import           Data.String       (IsString, fromString)
+import GHC.Exts (Constraint)
 
 type MiniTestTree =
   forall t name assertion.
-  ( UnitTester assertion
-  , Tester t name assertion
+  ( UnitTester t name assertion
+  , Tester t name
+  , PropertyTester t name
   )
   => t
 
 -- | Test interface required to run course tests
-class IsString name => Tester t name assertion | t -> name, t -> assertion where
+class IsString name => Tester t name | t -> name where
   testGroup :: name -> [t] -> t
-  testCase :: name -> assertion -> t
   test :: t -> IO ()
 
-class UnitTester assertion where
+class IsString name => UnitTester t name assertion | t -> name, t -> assertion, assertion -> t where
+  testCase :: name -> assertion -> t
   (@?=) :: (Eq a, Show a) => a -> a -> assertion
   infix 1 @?=
 
-class IsString name => PropertyTester t name prop | t -> name, t -> prop where
-  testProperty :: name -> prop -> t
+class IsString name => PropertyTester t name | t -> name where
+  data Arbitrary t :: * -> Constraint
+  data Gen t :: * -> *
+  data Property t
 
+  arbitrary :: Arbitrary t a => Gen t a
+  forAllShrink :: Gen t a -> (a -> [a]) -> (a -> prop) -> Property t
+  testProperty :: forall prop. name -> prop -> t
 
--- | A data type for our embedded instance to hang off
-data CourseTester
 
 -- | The test tree structure used by our embedded instance
 data CourseTestTree =
@@ -54,8 +60,8 @@ data Result =
 -- | Run our embedded test tree, printing failures.
 testCourseTree' ::
   CourseTestTree -> IO ()
-testCourseTree' =
-  go ""
+testCourseTree' t =
+  go "" t >> putStrLn "WARNING: No properties tested"
   where
     qualifiedName s s' =
       bool (intercalate "." [s,s']) s' (null s)
@@ -77,20 +83,23 @@ testCourseTree' =
     go s (Tree s' ts) = foldMap (go (qualifiedName s s')) ts
 
 -- | Instance for the embedded test implementation
-instance Tester CourseTestTree String Result where
+instance Tester CourseTestTree String where
   testGroup s =
     Tree s . foldr (:) []
-  testCase =
-    Single
   test =
     testCourseTree'
 
-instance UnitTester Result where
+instance UnitTester CourseTestTree String Result where
+  testCase =
+    Single
+
   a @?= b =
     let
       msg = "Expected " <> show a <> " but got " <> show b
     in
       bool (Failure msg) Success (a == b)
+
+instance PropertyTester CourseTestTree String --where
 
 
 courseTest ::
