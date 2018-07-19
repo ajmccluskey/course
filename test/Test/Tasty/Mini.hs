@@ -1,5 +1,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE ImplicitPrelude       #-}
+{-# LANGUAGE InstanceSigs          #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE TypeFamilies          #-}
@@ -7,11 +9,15 @@
 
 module Test.Tasty.Mini where
 
+import           Course.Validation
+
+import qualified Test.QuickCheck       as Q
 import qualified Test.Tasty            as T
 import qualified Test.Tasty.HUnit      as T
 import qualified Test.Tasty.QuickCheck as T
 
-import           Test.Mini             (PropertyTester (..), Tester (..),
+import           Test.Mini             (Arbitrary (..),
+                                        Testable (..), Tester (..),
                                         UnitTester (..))
 
 
@@ -33,9 +39,26 @@ instance UnitTester TastyTree T.TestName TastyAssertion where
 
   (@?=) = (TA .) . (T.@?=)
 
-instance T.Testable a => PropertyTester TastyTree T.TestName a where
-  testProperty n =
-    TT . T.testProperty n
+instance T.Arbitrary (Validation Int) where
+  arbitrary = Value <$> Q.arbitrary
+
+instance (T.Arbitrary a, Show a) => T.Testable (Testable TastyTree a) where
+  property (B b) = T.property b
+  property (Fn f) = undefined --T.property f
+
+-- instance Arbitrary TastyTree T.TestName (Testable )
+
+instance Arbitrary TastyTree T.TestName (Validation Int) where
+  testProperty n (Fn f) = undefined
+    --TT $ T.testProperty n f
+
+instance Arbitrary TastyTree T.TestName Err where
+  testProperty n (Fn f) = undefined
+    --TT $ T.testProperty n f
+
+instance Arbitrary TastyTree T.TestName Int where
+  testProperty n (Fn f) = undefined
+    --TT $ T.testProperty n f
 
 
 tastyTest ::

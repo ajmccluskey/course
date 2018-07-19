@@ -1,8 +1,11 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE ImplicitPrelude        #-}
+{-# LANGUAGE LiberalTypeSynonyms #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE TypeFamilies           #-}
 
@@ -19,11 +22,10 @@ import           Data.Monoid       ((<>))
 import           Data.String       (IsString, fromString)
 import GHC.Exts (Constraint)
 
-type MiniTestTree =
-  forall t name assertion.
+type MiniTestTree t =
+  forall name assertion.
   ( UnitTester t name assertion
   , Tester t name
-  , PropertyTester t name
   )
   => t
 
@@ -37,15 +39,13 @@ class IsString name => UnitTester t name assertion | t -> name, t -> assertion, 
   (@?=) :: (Eq a, Show a) => a -> a -> assertion
   infix 1 @?=
 
-class IsString name => PropertyTester t name | t -> name where
-  data Arbitrary t :: * -> Constraint
-  data Gen t :: * -> *
-  data Property t
+class (IsString name) => Arbitrary t name a | t -> name where
+  testProperty :: name -> Testable t a -> t
 
-  arbitrary :: Arbitrary t a => Gen t a
-  forAllShrink :: Gen t a -> (a -> [a]) -> (a -> prop) -> Property t
-  testProperty :: forall prop. name -> prop -> t
-
+data Testable t a where
+  B :: Bool -> Testable t ()
+  --FnBool :: forall t n a. Arbitrary t n a => (a -> Bool)-> Testable t a
+  Fn :: forall t n a b. Arbitrary t n a => (a -> Testable t b) -> Testable t a
 
 -- | The test tree structure used by our embedded instance
 data CourseTestTree =
@@ -98,9 +98,6 @@ instance UnitTester CourseTestTree String Result where
       msg = "Expected " <> show a <> " but got " <> show b
     in
       bool (Failure msg) Success (a == b)
-
-instance PropertyTester CourseTestTree String --where
-
 
 courseTest ::
   CourseTestTree
