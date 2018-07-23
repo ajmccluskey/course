@@ -3,18 +3,17 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
 {-# LANGUAGE ImplicitPrelude        #-}
-{-# LANGUAGE LiberalTypeSynonyms    #-}
+{-# LANGUAGE KindSignatures         #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
-{-# LANGUAGE TypeFamilies           #-}
 
 -- | The smallest possible test library interface that will run the current test
 -- suite. For those comfortable with cabal, we also provide a Test.Tasty.Mini
 -- module with a type and instance for running the test suite with Tasty.
 module Test.Mini where
 
-import           Data.String       (IsString)
+import           Data.String (IsString)
 
 type MiniTestTree =
   forall name assertion t g.
