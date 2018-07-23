@@ -79,13 +79,6 @@ newtype CourseGen a =
   CourseGen a
   deriving (Functor)
 
-instance Applicative CourseGen where
-  pure = error "pure should never be called for CourseGen"
-  (<*>) = error "(<*>) should never be called for CourseGen"
-
-instance Monad CourseGen where
-  (>>=) = error "(>>=) should never be called for CourseGen"
-
 instance Arbitrary CourseTestTree CourseGen where
   gen = error "`gen` should never be called for CourseGen"
   shrink = error "`shrink` should never be called for CourseGen"
