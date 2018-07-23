@@ -1,19 +1,20 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ImplicitPrelude #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE DeriveFunctor         #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE ImplicitPrelude       #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 module Test.Course.Mini where
 
-import Control.Exception (catch, SomeException)
-import Data.Bool (bool)
-import Data.Foldable (traverse_)
-import Data.List (intercalate)
-import Data.String (fromString)
-import Data.Monoid ((<>))
+import           Control.Exception (SomeException, catch)
+import           Data.Bool         (bool)
+import           Data.Foldable     (traverse_)
+import           Data.List         (intercalate)
+import           Data.Monoid       ((<>))
 
-import Test.Mini (Tester (..), UnitTester (..), Arbitrary (..), PropertyTester (..))
+import           Test.Mini         (Arbitrary (..), PropertyTester (..),
+                                    Tester (..), UnitTester (..))
 
 -- | The test tree structure used by our embedded instance
 data CourseTestTree =
