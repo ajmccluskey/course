@@ -3,6 +3,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Course.Gens where
@@ -27,11 +28,18 @@ genInteger ::
 genInteger =
   let
     toInteger = P.fromIntegral :: Int -> Integer
-  in
-    GenA GenInt toInteger (P.fmap toInteger . shrink GenInt)
+    genInt = GenInt :: Arbitrary t g => Gen t Int
 
-genIntegerList :: Gen t (List Integer)
-genIntegerList = genList $ GenA GenInt
+    shrink' :: Integer -> [Integer]
+    shrink' = P.fmap toInteger . shrink genInt . P.fromIntegral
+  in
+    GenA genInt toInteger shrink'
+
+genIntegerList ::
+  Arbitrary t g
+  => Gen t (List Integer)
+genIntegerList =
+  genList $ GenList genInteger
 
 genIntegerAndList :: Gen t (Integer, List Integer)
 genIntegerAndList =
