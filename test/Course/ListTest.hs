@@ -1,28 +1,23 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Course.ListTest where
 
-import qualified Prelude               as P (length)
+import qualified Prelude         as P (length)
 
-import           Test.QuickCheck       (forAllShrink)
-import           Test.Tasty.QuickCheck (testProperty)
-
-import           Test.Mini             (MiniTestTree, Tester (..),
-                                        UnitTester (..))
+import           Test.Mini       (Gen (..), MiniTestTree, PropertyTester (..),
+                                  Testable (..), Tester (..), UnitTester (..), fn)
 
 import           Course.Core
-import           Course.Gens           (forAllLists, genIntegerAndList, genList,
-                                        genListOfLists, genThreeLists,
-                                        genTwoLists, shrinkIntegerAndList,
-                                        shrinkList, shrinkListOfLists,
-                                        shrinkThreeLists, shrinkTwoLists)
-import           Course.List           (List (..), filter, find, flatMap,
-                                        flatten, flattenAgain, foldLeft, headOr,
-                                        hlist, infinity, largeList, length,
-                                        lengthGT4, listh, map, produce, product,
-                                        reverse, seqOptional, sum, take, (++))
-import           Course.Optional       (Optional (..))
+import           Course.Gens     (genIntegerAndList, genList, genListOfLists,
+                                  genThreeLists, genTwoLists, genInteger, genIntegerList)
+import           Course.List     (List (..), filter, find, flatMap, flatten,
+                                  flattenAgain, foldLeft, headOr, hlist,
+                                  infinity, largeList, length, lengthGT4, listh,
+                                  map, produce, product, reverse, seqOptional,
+                                  sum, take, (++))
+import           Course.Optional (Optional (..))
 
 test_List :: MiniTestTree
 test_List =
@@ -49,8 +44,8 @@ headOrTest =
   testGroup "headOr" [
     testCase "headOr on non-empty list" $ headOr 3 (1 :. 2 :. Nil) @?= 1
   , testCase "headOr on empty list" $ headOr 3 Nil @?= 3
-  , testProperty "headOr on infinity always 0" $ \x -> x `headOr` infinity == 0
-  , testProperty "headOr on empty list always the default" $ \x -> x `headOr` Nil == (x :: Integer)
+  , testProperty "headOr on infinity always 0" . Fn genInteger $ \x -> B $ x `headOr` infinity == 0
+  , testProperty "headOr on empty list always the default" . fn genInteger $ \x -> x `headOr` Nil == x
   ]
 
 productTest :: MiniTestTree
@@ -66,8 +61,8 @@ sumTest =
   testGroup "sum" [
     testCase "sum 1..3" $ sum (1 :. 2 :. 3 :. Nil) @?= 6
   , testCase "sum 1..4" $ sum (1 :. 2 :. 3 :. 4 :. Nil) @?= 10
-  , testProperty "subtracting each element in a list from its sum is always 0" $
-      forAllShrink genList shrinkList (\x -> foldLeft (-) (sum x) x == 0)
+  , testProperty "subtracting each element in a list from its sum is always 0" . fn (genList (GenList GenInt)) $
+      \x -> foldLeft (-) (sum x) x == 0
   ]
 
 lengthTest :: MiniTestTree

@@ -8,7 +8,7 @@
 module Course.Gens where
 
 import qualified Prelude             as P --(fmap, foldr, (<$>), (<*>))
-import Test.Mini (PropertyTester (..), Arbitrary (..), Gen (..), Testable)
+import Test.Mini (PropertyTester (..), Arbitrary (..), Gen (..), Testable (..))
 
 import           Course.Core
 import           Course.List         (List (..), hlist, listh)
@@ -16,10 +16,13 @@ import           Course.ListZipper   (ListZipper (..), zipper)
 
 genList ::
   Arbitrary t g
-  => Gen t [a]
+  => Gen t a
   -> Gen t (List a)
-genList gl =
-  GenA gl listh $ P.fmap listh . shrink gl . hlist
+genList g =
+  let
+    gl = GenList g
+  in
+    GenA gl listh $ P.fmap listh . shrink gl . hlist
 
 genInteger ::
   forall t g.
@@ -43,7 +46,7 @@ genIntegerList ::
   Arbitrary t g
   => Gen t (List Integer)
 genIntegerList =
-  genList $ GenList genInteger
+  genList genInteger
 
 genIntegerAndList ::
   forall t g.
