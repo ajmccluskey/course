@@ -41,13 +41,6 @@ genInteger =
   in
     GenA genInt toInteger' shrink'
 
-genIntegerList ::
-  forall t g.
-  Arbitrary t g
-  => Gen t (List Integer)
-genIntegerList =
-  genList genInteger
-
 genIntegerAndList ::
   forall t g.
   Arbitrary t g
@@ -58,9 +51,9 @@ genIntegerAndList =
     gi = genInteger
 
     gl :: Gen t (List Integer)
-    gl = genIntegerList
+    gl = genList genInteger
   in
-    GenAB gi genIntegerList (,) $ \(n, ns) ->
+    GenAB gi gl (,) $ \(n, ns) ->
       P.zip (shrink gi n) (shrink gl ns)
 
 genTwoLists ::
@@ -70,7 +63,7 @@ genTwoLists ::
 genTwoLists =
   let
     gl :: Gen t (List Integer)
-    gl = genIntegerList
+    gl = genList genInteger
   in
     GenAB gl gl (,) $ \(as, bs) ->
       P.zip (shrink gl as) (shrink gl bs)
@@ -82,17 +75,10 @@ genThreeLists ::
 genThreeLists =
   let
     gl :: Gen t (List Integer)
-    gl = genIntegerList
+    gl = genList genInteger
   in
     GenAB gl genTwoLists smoosh $ \(a, b, c) ->
       zip3 (shrink gl a) (shrink gl b) (shrink gl c)
-
-genListOfLists ::
-  forall t g.
-  Arbitrary t g
-  => Gen t (List (List Integer))
-genListOfLists =
-  genList $ GenList genIntegerList
 
 genIntegerAndTwoLists ::
   forall t g.
@@ -100,7 +86,7 @@ genIntegerAndTwoLists ::
   => Gen t (Integer, List Integer, List Integer)
 genIntegerAndTwoLists =
   let
-    sl = shrink (genIntegerList :: Gen t (List Integer))
+    sl = shrink (genList genInteger :: Gen t (List Integer))
     si = shrink (genInteger :: Gen t Integer)
   in
     GenAB genInteger genTwoLists smoosh $ \(i, is, is') -> zip3 (si i) (sl is) (sl is')
