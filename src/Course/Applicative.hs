@@ -353,7 +353,7 @@ replicateA ::
   -> f a
   -> f (List a)
 replicateA n =
-  foldRight (lift2 (:.)) (pure Nil) . replicate n
+  sequence . replicate n
 
 -- | Filter a list with a predicate that produces an effect.
 --
