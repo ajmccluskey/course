@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE TupleSections #-}
 
 module Course.State where
 
@@ -123,8 +124,8 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  (=<<) =
-    error "todo: Course.State (=<<)#instance (State s)"
+  (=<<) f (State g) =
+    State $ \s -> let (a, s') = g s; (State h) = f a in h s'
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.
@@ -145,8 +146,8 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM =
-  error "todo: Course.State#findM"
+findM f =
+  foldRight (\a foa -> bool foa (pure (Full a)) =<< f a) (pure Empty)
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
@@ -160,7 +161,10 @@ firstRepeat ::
   List a
   -> Optional a
 firstRepeat =
-  error "todo: Course.State#firstRepeat"
+  let
+    f a = get >>= State . const . lift3 bool ((False, ) . S.insert a) (True,) (S.member a)
+  in
+    (`eval` S.empty) . findM f
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -173,7 +177,7 @@ distinct ::
   List a
   -> List a
 distinct =
-  error "todo: Course.State#distinct"
+  (`eval` S.empty) . filtering (\a -> get >>= \s -> bool (State (const (True, S.insert a s))) (pure False) $ S.member a s)
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
