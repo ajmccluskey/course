@@ -3,6 +3,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 
 module Course.StateT where
 
@@ -135,7 +136,7 @@ exec' ::
   -> s
   -> s
 exec' (StateT sfa) =
-  error "" -- snd . runExactlyOne . sfa
+  snd . runExactlyOne . sfa
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting value.
 --
@@ -147,7 +148,7 @@ evalT ::
   -> s
   -> f a
 evalT (StateT sfa) =
-  error "" -- (fst <$>) . sfa
+  (fst <$>) . sfa
 
 -- | Run the `State'` seeded with `s` and retrieve the resulting value.
 --
@@ -158,7 +159,7 @@ eval' ::
   -> s
   -> a
 eval' (StateT sfa) =
-  error "" -- fst . runExactlyOne . sfa
+  fst . runExactlyOne . sfa
 
 -- | A `StateT` where the state also distributes into the produced value.
 --
@@ -168,7 +169,7 @@ getT ::
   Applicative f =>
   StateT s f s
 getT =
-  error "todo: Course.StateT#getT"
+  StateT $ pure . join (,)
 
 -- | A `StateT` where the resulting state is seeded with the given value.
 --
@@ -181,8 +182,8 @@ putT ::
   Applicative f =>
   s
   -> StateT s f ()
-putT =
-  error "todo: Course.StateT#putT"
+putT s =
+  StateT $ const (pure ((),s))
 
 -- | Remove all duplicate elements in a `List`.
 --
@@ -194,7 +195,11 @@ distinct' ::
   List a
   -> List a
 distinct' =
-  error "todo: Course.StateT#distinct'"
+  let
+    include a s =
+      bool (putT (S.insert a s) >> pure True) (pure False) $ S.member a s
+  in
+    (`eval'` S.empty) . filtering (\a -> getT >>= include a)
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
