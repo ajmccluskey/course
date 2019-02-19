@@ -39,8 +39,8 @@ instance Functor f => Functor (StateT s f) where
     (a -> b)
     -> StateT s f a
     -> StateT s f b
-  (<$>) =
-    error "todo: Course.StateT (<$>)#instance (StateT s f)"
+  (<$>) f (StateT sfa) =
+    StateT $ \s -> (\(a,s') -> (f a, s')) <$> sfa s
 
 -- | Implement the `Applicative` instance for @StateT s f@ given a @Monad f@.
 --
@@ -63,14 +63,15 @@ instance Monad f => Applicative (StateT s f) where
   pure ::
     a
     -> StateT s f a
-  pure =
-    error "todo: Course.StateT pure#instance (StateT s f)"
+  pure a =
+    StateT $ \s -> pure (a,s)
   (<*>) ::
     StateT s f (a -> b)
     -> StateT s f a
     -> StateT s f b
-  (<*>) =
-    error "todo: Course.StateT (<*>)#instance (StateT s f)"
+  (<*>) (StateT sff) (StateT sfa) =
+    StateT $ \s ->
+      sff s >>= (\(f,s') -> (\(a,s'') -> (f a, s'')) <$> sfa s')
 
 -- | Implement the `Monad` instance for @StateT s f@ given a @Monad f@.
 -- Make sure the state value is passed through in `bind`.
@@ -85,8 +86,8 @@ instance Monad f => Monad (StateT s f) where
     (a -> StateT s f b)
     -> StateT s f a
     -> StateT s f b
-  (=<<) =
-    error "todo: Course.StateT (=<<)#instance (StateT s f)"
+  (=<<) f (StateT sfa) =
+    StateT $ \s -> sfa s >>= \(a,s') -> (`runStateT` s') $ f a
 
 -- | A `State'` is `StateT` specialised to the `ExactlyOne` functor.
 type State' s a =
@@ -100,7 +101,7 @@ state' ::
   (s -> (a, s))
   -> State' s a
 state' =
-  error "todo: Course.StateT#state'"
+  StateT . (ExactlyOne .)
 
 -- | Provide an unwrapper for `State'` values.
 --
@@ -110,8 +111,8 @@ runState' ::
   State' s a
   -> s
   -> (a, s)
-runState' =
-  error "todo: Course.StateT#runState'"
+runState' (StateT sfa) =
+  runExactlyOne . sfa
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting state.
 --
@@ -122,8 +123,8 @@ execT ::
   StateT s f a
   -> s
   -> f s
-execT =
-  error "todo: Course.StateT#execT"
+execT (StateT sfa) =
+  (snd <$>) . sfa
 
 -- | Run the `State'` seeded with `s` and retrieve the resulting state.
 --
@@ -133,8 +134,8 @@ exec' ::
   State' s a
   -> s
   -> s
-exec' =
-  error "todo: Course.StateT#exec'"
+exec' (StateT sfa) =
+  error "" -- snd . runExactlyOne . sfa
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting value.
 --
@@ -145,8 +146,8 @@ evalT ::
   StateT s f a
   -> s
   -> f a
-evalT =
-  error "todo: Course.StateT#evalT"
+evalT (StateT sfa) =
+  error "" -- (fst <$>) . sfa
 
 -- | Run the `State'` seeded with `s` and retrieve the resulting value.
 --
@@ -156,8 +157,8 @@ eval' ::
   State' s a
   -> s
   -> a
-eval' =
-  error "todo: Course.StateT#eval'"
+eval' (StateT sfa) =
+  error "" -- fst . runExactlyOne . sfa
 
 -- | A `StateT` where the state also distributes into the produced value.
 --
