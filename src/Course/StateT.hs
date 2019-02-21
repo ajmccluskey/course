@@ -195,11 +195,7 @@ distinct' ::
   List a
   -> List a
 distinct' =
-  let
-    include a s =
-      bool (putT (S.insert a s) >> pure True) (pure False) $ S.member a s
-  in
-    (`eval'` S.empty) . filtering (\a -> getT >>= include a)
+    (`eval'` S.empty) . filtering (\a -> StateT $ pure . (S.member a &&& S.insert a))
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
@@ -217,7 +213,10 @@ distinctF ::
   List a
   -> Optional (List a)
 distinctF =
-  error "todo: Course.StateT#distinctF"
+  let
+    f a = StateT $ \s -> bool (Full (S.notMember a s, S.insert a s)) Empty (a > 100)
+  in
+    (`evalT` S.empty) . filtering f
 
 -- | An `OptionalT` is a functor of an `Optional` value.
 data OptionalT f a =
@@ -235,8 +234,8 @@ instance Functor f => Functor (OptionalT f) where
     (a -> b)
     -> OptionalT f a
     -> OptionalT f b
-  (<$>) =
-    error "todo: Course.StateT (<$>)#instance (OptionalT f)"
+  (<$>) f =
+    OptionalT . ((<$>) . (<$>)) f . runOptionalT
 
 -- | Implement the `Applicative` instance for `OptionalT f` given a Monad f.
 --
@@ -267,14 +266,14 @@ instance Monad f => Applicative (OptionalT f) where
     a
     -> OptionalT f a
   pure =
-    error "todo: Course.StateT pure#instance (OptionalT f)"
+    OptionalT . pure . Full
 
   (<*>) ::
     OptionalT f (a -> b)
     -> OptionalT f a
     -> OptionalT f b
-  (<*>) =
-    error "todo: Course.StateT (<*>)#instance (OptionalT f)"
+  (<*>) (OptionalT fog) (OptionalT foa) =
+    OptionalT $ fog >>= optional ((<$> foa) . (<*>) . pure) (pure Empty)
 
 -- | Implement the `Monad` instance for `OptionalT f` given a Monad f.
 --
