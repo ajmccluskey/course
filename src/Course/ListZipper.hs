@@ -59,21 +59,31 @@ data MaybeListZipper a =
   | IsNotZ
   deriving Eq
 
+maybeZ ::
+  (ListZipper a -> b)
+  -> b
+  -> MaybeListZipper a
+  -> b
+maybeZ f b mlz =
+  case mlz of
+    IsZ lz -> f lz
+    IsNotZ -> b
+
 -- | Implement the `Functor` instance for `ListZipper`.
 --
 -- >>> (+1) <$> (zipper [3,2,1] 4 [5,6,7])
 -- [4,3,2] >5< [6,7,8]
 instance Functor ListZipper where
-  (<$>) =
-    error "todo: Course.ListZipper (<$>)#instance ListZipper"
+  (<$>) f (ListZipper ls a rs) =
+    ListZipper (f <$> ls) (f a) (f <$> rs)
 
 -- | Implement the `Functor` instance for `MaybeListZipper`.
 --
 -- >>> (+1) <$> (IsZ (zipper [3,2,1] 4 [5,6,7]))
 -- [4,3,2] >5< [6,7,8]
 instance Functor MaybeListZipper where
-  (<$>) =
-    error "todo: Course.ListZipper (<$>)#instance MaybeListZipper"
+  (<$>) f =
+    maybeZ (IsZ . (f <$>)) IsNotZ
 
 -- | Convert the given zipper back to a list.
 --
@@ -88,17 +98,15 @@ instance Functor MaybeListZipper where
 toList ::
   ListZipper a
   -> List a
-toList =
-  error "todo: Course.ListZipper#toList"
+toList (ListZipper ls a rs) =
+  foldLeft (flip (:.)) (a :. rs) ls
 
 -- | Convert the given (maybe) zipper back to a list.
 toListZ ::
   MaybeListZipper a
   -> List a
-toListZ IsNotZ =
-  Nil
-toListZ (IsZ z) =
-  toList z
+toListZ =
+  maybeZ toList Nil
 
 -- | Create a `MaybeListZipper` positioning the focus at the head.
 --
@@ -112,8 +120,10 @@ toListZ (IsZ z) =
 fromList ::
   List a
   -> MaybeListZipper a
-fromList =
-  error "todo: Course.ListZipper#fromList"
+fromList as =
+  case as of
+    Nil -> IsNotZ
+    (a :. as') -> IsZ $ ListZipper Nil a as'
 
 -- | Retrieve the `ListZipper` from the `MaybeListZipper` if there is one.
 --
@@ -124,7 +134,7 @@ toOptional ::
   MaybeListZipper a
   -> Optional (ListZipper a)
 toOptional =
-  error "todo: Course.ListZipper#toOptional"
+  maybeZ Full Empty
 
 zipper ::
   [a]
@@ -183,8 +193,8 @@ withFocus ::
   (a -> a)
   -> ListZipper a
   -> ListZipper a
-withFocus =
-  error "todo: Course.ListZipper#withFocus"
+withFocus f (ListZipper ls a rs) =
+  ListZipper ls (f a) rs
 
 -- | Set the focus of the zipper to the given value.
 -- /Tip:/ Use `withFocus`.
@@ -199,7 +209,7 @@ setFocus ::
   -> ListZipper a
   -> ListZipper a
 setFocus =
-  error "todo: Course.ListZipper#setFocus"
+  withFocus . const
 
 -- A flipped infix alias for `setFocus`. This allows:
 --
@@ -221,8 +231,8 @@ setFocus =
 hasLeft ::
   ListZipper a
   -> Bool
-hasLeft =
-  error "todo: Course.ListZipper#hasLeft"
+hasLeft (ListZipper ls _ _) =
+  foldRight (\_ _ -> True) False ls
 
 -- | Returns whether there are values to the right of focus.
 --
