@@ -284,8 +284,8 @@ instance Monad f => Monad (OptionalT f) where
     (a -> OptionalT f b)
     -> OptionalT f a
     -> OptionalT f b
-  (=<<) =
-    error "todo: Course.StateT (=<<)#instance (OptionalT f)"
+  (=<<) f (OptionalT foa) =
+    OptionalT $ foa >>= (runOptionalT . optional f (OptionalT (pure Empty)))
 
 -- | A `Logger` is a pair of a list of log values (`[l]`) and an arbitrary value (`a`).
 data Logger l a =
@@ -301,8 +301,8 @@ instance Functor (Logger l) where
     (a -> b)
     -> Logger l a
     -> Logger l b
-  (<$>) =
-    error "todo: Course.StateT (<$>)#instance (Logger l)"
+  (<$>) f (Logger l a) =
+    Logger l $ f a
 
 -- | Implement the `Applicative` instance for `Logger`.
 --
@@ -316,14 +316,14 @@ instance Applicative (Logger l) where
     a
     -> Logger l a
   pure =
-    error "todo: Course.StateT pure#instance (Logger l)"
+    Logger Nil
 
   (<*>) ::
     Logger l (a -> b)
     -> Logger l a
     -> Logger l b
-  (<*>) =
-    error "todo: Course.StateT (<*>)#instance (Logger l)"
+  (<*>) (Logger l f) (Logger l' a) =
+    Logger (l ++ l') $ f a
 
 -- | Implement the `Monad` instance for `Logger`.
 -- The `bind` implementation must append log values to maintain associativity.
@@ -335,8 +335,8 @@ instance Monad (Logger l) where
     (a -> Logger l b)
     -> Logger l a
     -> Logger l b
-  (=<<) =
-    error "todo: Course.StateT (=<<)#instance (Logger l)"
+  (=<<) f (Logger l a) =
+    let Logger l' b = f a in Logger (l ++ l') b
 
 -- | A utility function for producing a `Logger` with one log value.
 --
@@ -346,8 +346,8 @@ log1 ::
   l
   -> a
   -> Logger l a
-log1 =
-  error "todo: Course.StateT#log1"
+log1 l =
+  Logger (l :. Nil)
 
 -- | Remove all duplicate integers from a list. Produce a log as you go.
 -- If there is an element above 100, then abort the entire computation and produce no result.
@@ -367,8 +367,17 @@ distinctG ::
   (Integral a, Show a) =>
   List a
   -> Logger Chars (Optional (List a))
-distinctG =
-  error "todo: Course.StateT#distinctG"
+distinctG as =
+  let
+    logMsg s = Full . ((s ++ ": ") ++) . listh . show
+    log msg a = StateT $ \s -> OptionalT $ Logger (optional pure Nil msg) ((,s) <$> a)
+    logger msg f p a = bool (log Empty (Full a)) (log (logMsg msg a) (f a)) $ p a
+    abortLogger = logger "aborting > 100" (const Empty) (> 100)
+    evenLogger = logger "even number" Full even
+    fil a =
+      getT >>= lift2 (<$) (S.notMember a) (putT . S.insert a)
+  in
+    runOptionalT . (`evalT` S.empty) $ filtering (fil <=< evenLogger <=< abortLogger) as
 
 onFull ::
   Applicative f =>
