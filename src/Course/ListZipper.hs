@@ -1,5 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 
 module Course.ListZipper where
 
@@ -445,8 +446,18 @@ moveLeftN ::
   Int
   -> ListZipper a
   -> MaybeListZipper a
-moveLeftN =
-  moveN moveLeft moveRightN
+moveLeftN n =
+  either (const IsNotZ) IsZ . moveLeftN' n
+
+either ::
+  (a -> c)
+  -> (b -> c)
+  -> Either a b
+  -> c
+either l r e =
+  case e of
+    Left a -> l a
+    Right b -> r b
 
 -- | Move the focus right the given number of positions. If the value is negative, move left instead.
 --
@@ -459,23 +470,25 @@ moveRightN ::
   Int
   -> ListZipper a
   -> MaybeListZipper a
-moveRightN =
-  moveN moveRight moveLeftN
+moveRightN n =
+  either (const IsNotZ) IsZ . moveRightN' n
 
 moveN ::
   (ListZipper a -> MaybeListZipper a)
-  -> (Int -> ListZipper a -> MaybeListZipper a)
+  -> (Int -> ListZipper a -> Either Int (ListZipper a))
   -> Int
   -> ListZipper a
-  -> MaybeListZipper a
+  -> Either Int (ListZipper a)
 moveN mvForward mvBack n lz
-  | n == 0 = IsZ lz
+  | n == 0 = Right lz
   | n < 0 = mvBack (abs n) lz
-  | otherwise = go n (IsZ lz)
+  | otherwise = case go n (IsZ lz, -1) of
+      (IsZ lz, _) -> Right lz
+      (_, made) -> Left made
   where
-    go _ IsNotZ = IsNotZ
+    go _ x@(IsNotZ, _) = x
     go 0 mlz = mlz
-    go n (IsZ lz) = go (n - 1) $ mvForward lz
+    go n (IsZ lz, made) = go (n - 1) . (, made + 1) $ mvForward lz
 
 -- | Move the focus left the given number of positions. If the value is negative, move right instead.
 -- If the focus cannot be moved, the given number of times, return the value by which it can be moved instead.
@@ -505,7 +518,7 @@ moveLeftN' ::
   -> ListZipper a
   -> Either Int (ListZipper a)
 moveLeftN' =
-  error "todo: Course.ListZipper#moveLeftN'"
+  moveN moveLeft moveRightN'
 
 -- | Move the focus right the given number of positions. If the value is negative, move left instead.
 -- If the focus cannot be moved, the given number of times, return the value by which it can be moved instead.
@@ -529,7 +542,7 @@ moveRightN' ::
   -> ListZipper a
   -> Either Int (ListZipper a)
 moveRightN' =
-  error "todo: Course.ListZipper#moveRightN'"
+  moveN moveRight moveLeftN'
 
 -- | Move the focus to the given absolute position in the zipper. Traverse the zipper only to the extent required.
 --
