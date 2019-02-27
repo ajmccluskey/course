@@ -558,8 +558,17 @@ nth ::
   Int
   -> ListZipper a
   -> MaybeListZipper a
-nth =
-  error "todo: Course.ListZipper#nth"
+nth n lz@(ListZipper ls _ rs) =
+  -- Curious to see if calculating lengths before doing all the moving is faster than trying the
+  -- moves until failure. Trying moves feels like it should be slower given it's constructing new
+  -- cons cells at each move, and half the time it's for nothing.
+  go (length ls) (length rs)
+  where
+    go szLs szRs
+      | szLs - 1 >= n = moveLeftN (szLs - n) lz
+      | szLs == n = IsZ lz
+      | n - szLs <= szRs = moveRightN (n - szLs) lz
+      | otherwise = IsNotZ
 
 -- | Return the absolute position of the current focus in the zipper.
 --
@@ -570,8 +579,8 @@ nth =
 index ::
   ListZipper a
   -> Int
-index =
-  error "todo: Course.ListZipper#index"
+index (ListZipper ls _ _) =
+  length ls
 
 -- | Move the focus to the end of the zipper.
 --
@@ -584,8 +593,8 @@ index =
 end ::
   ListZipper a
   -> ListZipper a
-end =
-  error "todo: Course.ListZipper#end"
+end lz =
+  maybeZ end lz $ moveRight lz
 
 -- | Move the focus to the start of the zipper.
 --
