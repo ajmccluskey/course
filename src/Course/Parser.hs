@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE InstanceSigs #-}
@@ -120,7 +121,9 @@ constantParser =
 character ::
   Parser Char
 character =
-  error "todo: Course.Parser#character"
+  P $ \case
+    (c :. cs) -> Result cs c
+    Nil -> UnexpectedEof
 
 -- | Parsers can map.
 -- Write a Functor instance for a @Parser@.
