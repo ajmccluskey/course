@@ -370,7 +370,7 @@ alpha =
 -- | Return a parser that sequences the given list of parsers by producing all their results
 -- but fails on the first failing parser of the list.
 --
--- /Tip:/ Use @(=<<)@ and @pure@.
+-- /Tip:/ Use @lift2@ and @pure@.
 -- /Tip:/ Optionally use @List#foldRight@. If not, an explicit recursive call.
 --
 -- >>> parse (sequenceParser (character :. is 'x' :. upper :. Nil)) "axCdef"
