@@ -401,8 +401,8 @@ thisMany ::
   Int
   -> Parser a
   -> Parser (List a)
-thisMany =
-  error "todo: Course.Parser#thisMany"
+thisMany n =
+  sequenceParser . replicate n
 
 -- | This one is done for you.
 --
@@ -435,7 +435,7 @@ ageParser =
 firstNameParser ::
   Parser Chars
 firstNameParser =
-  error "todo: Course.Parser#firstNameParser"
+  (:.) <$> upper <*> list lower
 
 -- | Write a parser for Person.surname.
 --
@@ -457,7 +457,7 @@ firstNameParser =
 surnameParser ::
   Parser Chars
 surnameParser =
-  error "todo: Course.Parser#surnameParser"
+  flatten <$> sequenceParser (thisMany 1 upper :. thisMany 5 lower :. list lower :. Nil)
 
 -- | Write a parser for Person.smoker.
 --
@@ -476,7 +476,7 @@ surnameParser =
 smokerParser ::
   Parser Bool
 smokerParser =
-  error "todo: Course.Parser#smokerParser"
+  (True <$ is 'y') ||| (False <$ is 'n')
 
 -- | Write part of a parser for Person#phoneBody.
 -- This parser will only produce a string of digits, dots or hyphens.
@@ -498,7 +498,7 @@ smokerParser =
 phoneBodyParser ::
   Parser Chars
 phoneBodyParser =
-  error "todo: Course.Parser#phoneBodyParser"
+  list (digit ||| is '-' ||| is '.')
 
 -- | Write a parser for Person.phone.
 --
@@ -520,7 +520,7 @@ phoneBodyParser =
 phoneParser ::
   Parser Chars
 phoneParser =
-  error "todo: Course.Parser#phoneParser"
+  flatten <$> sequence (thisMany 1 digit :. phoneBodyParser :. Nil) <* is '#'
 
 -- | Write a parser for Person.
 --
@@ -574,7 +574,12 @@ phoneParser =
 personParser ::
   Parser Person
 personParser =
-  error "todo: Course.Parser#personParser"
+  Person
+  <$> ageParser
+  <*>~ firstNameParser
+  <*>~ surnameParser
+  <*>~ smokerParser
+  <*>~ phoneParser
 
 -- Make sure all the tests pass!
 
