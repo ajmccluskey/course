@@ -135,8 +135,8 @@ instance Functor Parser where
     (a -> b)
     -> Parser a
     -> Parser b
-  (<$>) =
-     error "todo: Course.Parser (<$>)#instance Parser"
+  (<$>) f pa =
+     P $ (f <$>) . parse pa
 
 -- | Return a parser that always succeeds with the given value and consumes no input.
 --
@@ -145,8 +145,8 @@ instance Functor Parser where
 valueParser ::
   a
   -> Parser a
-valueParser =
-  error "todo: Course.Parser#valueParser"
+valueParser a =
+  P $ \i -> Result i a
 
 -- | Return a parser that tries the first parser for a successful value.
 --
@@ -169,8 +169,8 @@ valueParser =
   Parser a
   -> Parser a
   -> Parser a
-(|||) =
-  error "todo: Course.Parser#(|||)"
+(|||) p1 p2 =
+  P $ \i -> let pr = parse p1 i in bool pr (parse p2 i) . isErrorResult $ pr
 
 infixl 3 |||
 
@@ -201,8 +201,8 @@ instance Monad Parser where
     (a -> Parser b)
     -> Parser a
     -> Parser b
-  (=<<) =
-    error "todo: Course.Parser (=<<)#instance Parser"
+  (=<<) f p =
+    P $ \i -> onResult (parse p i) (\i' a -> parse (f a) i')
 
 -- | Write an Applicative functor instance for a @Parser@.
 -- /Tip:/ Use @(=<<)@.
