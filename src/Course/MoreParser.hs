@@ -240,7 +240,7 @@ betweenCharTok ::
   -> Parser a
   -> Parser a
 betweenCharTok co cc =
-  between (tok (is co)) (is cc) . tok
+  between (charTok co) (is cc) . tok
 
 -- | Write a function that parses 4 hex digits and return the character value.
 --
@@ -425,4 +425,4 @@ betweenSepbyComma ::
   -> Parser a
   -> Parser (List a)
 betweenSepbyComma b1 b2 pa =
-  betweenCharTok b1 b2 (sepby (tok pa) (tok (is ',')) ||| pure Nil)
+  betweenCharTok b1 b2 (sepby (tok pa) (charTok ',') ||| pure Nil)
