@@ -240,7 +240,7 @@ betweenCharTok ::
   -> Parser a
   -> Parser a
 betweenCharTok co cc =
-  between (is co) (is cc)
+  between (tok (is co)) (is cc) . tok
 
 -- | Write a function that parses 4 hex digits and return the character value.
 --
@@ -365,8 +365,8 @@ eof =
 satisfyAll ::
   List (Char -> Bool)
   -> Parser Char
-satisfyAll =
-  error "todo: Course.MoreParser#satisfyAll"
+satisfyAll ps =
+  satisfy $ and . sequence ps
 
 -- | Write a parser that produces a character that satisfies any of the given predicates.
 --
@@ -386,8 +386,8 @@ satisfyAll =
 satisfyAny ::
   List (Char -> Bool)
   -> Parser Char
-satisfyAny =
-  error "todo: Course.MoreParser#satisfyAny"
+satisfyAny ps =
+  satisfy $ or . sequence ps
 
 -- | Write a parser that parses between the two given characters, separated by a comma character ','.
 --
@@ -424,5 +424,5 @@ betweenSepbyComma ::
   -> Char
   -> Parser a
   -> Parser (List a)
-betweenSepbyComma =
-  error "todo: Course.MoreParser#betweenSepbyComma"
+betweenSepbyComma b1 b2 pa =
+  betweenCharTok b1 b2 (sepby (tok pa) (tok (is ',')) ||| pure Nil)
