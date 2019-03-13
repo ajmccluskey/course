@@ -57,7 +57,7 @@ tok ::
   Parser a
   -> Parser a
 tok p =
-  p >>= (<$ spaces)
+  p <* spaces
 
 -- | Write a function that parses the given char followed by 0 or more spaces.
 --
