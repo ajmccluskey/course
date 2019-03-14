@@ -326,9 +326,20 @@ dollars ::
   -> Chars
 dollars s =
   let
-    (ds, cs) = (\(ds',cs') -> (ds',take 2 cs')) $ span (== '.') s
+    (ds, cs) = (\(ds',cs') -> (dropWhile (== '0') ds', take 2 cs')) $ span (== '.') s
+
+    hundos = (hundo <$>) . toDigits3 . digits
+
+    z :: Chars -> Chars -> Chars
+    z "" h = h
+    z i h = h ++ " " ++ i
+
+    dz = flatten . reverse . zipWith z illion . reverse $ hundos ds
+    cz = flatten $ hundos cs
+    zeroHandler :: Chars -> Chars
+    zeroHandler xs = bool xs "zero" (xs == Nil)
   in
-    error "todo: Course.Cheque#dollars"
+    zeroHandler dz ++ " dollars and " ++ zeroHandler cz ++ " cents"
 
 digits ::
   Chars
@@ -350,17 +361,42 @@ toDigits3 ds =
   in
     optional (:. d3s) d3s od3
 
--- ten ::
---   Digit
---   -> Chars
--- ten = \case
---   Zero -> ""
---   One -> teen
---   Two -> "twenty"
---   Three -> 
+showTen ::
+  Digit
+  -> Chars
+showTen = \case
+  Zero -> ""
+  One -> "ten"
+  Two -> "twenty"
+  Three -> "thirty"
+  Four -> "forty"
+  Five -> "fifty"
+  Six -> "sixty"
+  Seven -> "seventy"
+  Eight -> "eighty"
+  Nine -> "ninety"
 
 hundo ::
   Digit3
   -> Chars
 hundo = \case
-  D3 Zero Zero n -> showDigit n
+  D1 o -> showDigit o
+  D2 Zero o -> showDigit o
+  D2 One o -> showTeen o
+  D2 t o -> showTen t ++ " " ++ showDigit o
+  D3 h t o -> showDigit h ++ " hundred and " ++ hundo (D2 t o)
+
+showTeen ::
+  Digit
+  -> Chars
+showTeen = \case
+  Zero -> "ten"
+  One -> "eleven"
+  Two -> "twelve"
+  Three -> "thirteen"
+  Four -> "fourteen"
+  Five -> "fifteen"
+  Six -> "sixteen"
+  Seven -> "seventeem"
+  Eight -> "eighteen"
+  Nine -> "nineteen"
