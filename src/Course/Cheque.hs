@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -187,7 +188,7 @@ data Digit =
   | Seven
   | Eight
   | Nine
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 showDigit ::
   Digit
@@ -218,7 +219,7 @@ data Digit3 =
   D1 Digit
   | D2 Digit Digit
   | D3 Digit Digit Digit
-  deriving Eq
+  deriving (Eq, Show)
 
 -- Possibly convert a character to a digit.
 fromChar ::
@@ -323,5 +324,43 @@ fromChar _ =
 dollars ::
   Chars
   -> Chars
-dollars =
-  error "todo: Course.Cheque#dollars"
+dollars s =
+  let
+    (ds, cs) = (\(ds',cs') -> (ds',take 2 cs')) $ span (== '.') s
+  in
+    error "todo: Course.Cheque#dollars"
+
+digits ::
+  Chars
+  -> List Digit
+digits =
+  foldRight (\c ds -> optional (:. ds) ds $ fromChar c) Nil
+
+toDigits3 ::
+  List Digit
+  -> List Digit3
+toDigits3 ds =
+  let
+    f d d3s = \case
+      Empty -> (d3s, Full (D1 d))
+      Full (D1 d1) -> (d3s, Full (D2 d d1))
+      Full (D2 d1 d2) -> (d3s, Full (D3 d d1 d2))
+      Full d3@(D3 _ _ _) -> (d3:.d3s, Full (D1 d))
+    (d3s, od3) = foldRight (\d (d3s, od3) -> f d d3s od3) (Nil, Empty) ds
+  in
+    optional (:. d3s) d3s od3
+
+-- ten ::
+--   Digit
+--   -> Chars
+-- ten = \case
+--   Zero -> ""
+--   One -> teen
+--   Two -> "twenty"
+--   Three -> 
+
+hundo ::
+  Digit3
+  -> Chars
+hundo = \case
+  D3 Zero Zero n -> showDigit n
