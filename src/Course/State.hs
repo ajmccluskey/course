@@ -108,8 +108,8 @@ instance Applicative (State s) where
   (<*>) (State sf) (State sa) =
     State $ \s ->
       let
-        (a,s1) = sa s
-        (f',s2) = sf s1
+        (f',s1) = sf s
+        (a,s2) = sa s1
       in
         (f' a, s2)
 
