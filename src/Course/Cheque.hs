@@ -326,16 +326,20 @@ dollars ::
   -> Chars
 dollars s =
   let
-    (ds, cs) = (\(ds',cs') -> (dropWhile (== '0') ds', take 2 cs')) $ span (== '.') s
+    (ds, cs) = (\(ds',cs') -> (dropWhile (== '0') ds', take 2 . drop 1 $ cs')) $ break (== '.') s
 
-    hundos = (hundo <$>) . toDigits3 . digits
+    hundos f = (hundo <$>) . (f <$>) . toDigits3 . digits
 
     z :: Chars -> Chars -> Chars
     z "" h = h
-    z i h = h ++ " " ++ i
+    z i h = h ++ " " ++ i ++ " "
 
-    dz = flatten . reverse . zipWith z illion . reverse $ hundos ds
-    cz = flatten $ hundos cs
+    padCents = \case
+      D1 n -> D2 n Zero
+      d -> d
+
+    dz = flatten . reverse . zipWith z illion . reverse $ hundos id ds
+    cz = flatten $  hundos padCents cs
     zeroHandler :: Chars -> Chars
     zeroHandler xs = bool xs "zero" (xs == Nil)
   in
