@@ -326,11 +326,14 @@ dollars ::
   -> Chars
 dollars s =
   let
-    (ds, cs) = (\(ds',cs') -> (dropWhile (== '0') ds', take 2 . drop 1 $ cs')) $ break (== '.') s
+    (rawDChars, rawCChars) =  break (== '.') s
+    dDigits = dropWhile (== Zero) . digits $ rawDChars
+    cDigits = take 2 . digits $ rawCChars
 
-    hundos f = (hundo <$>) . (f <$>) . toDigits3 . digits
+    hundos f = (hundo <$>) . (f <$>) . toDigits3
 
     z :: Chars -> Chars -> Chars
+    z _ "" = ""
     z "" h = h
     z i h = h ++ " " ++ i ++ " "
 
@@ -338,12 +341,21 @@ dollars s =
       D1 n -> D2 n Zero
       d -> d
 
-    dz = flatten . reverse . zipWith z illion . reverse $ hundos id ds
-    cz = flatten $  hundos padCents cs
     zeroHandler :: Chars -> Chars
     zeroHandler xs = bool xs "zero" (xs == Nil)
+
+    ds = zeroHandler . flatten . reverse . zipWith z illion . reverse $ hundos id dDigits
+    cs = zeroHandler . flatten $  hundos padCents cDigits
+
+    addUnit :: Chars -> Chars -> Chars
+    addUnit u = \case
+      "one" -> "one " ++ u
+      a -> a ++ " " ++ u ++ "s"
+
+    ds' = addUnit "dollar" ds
+    cs' = addUnit "cent" cs
   in
-    zeroHandler dz ++ " dollars and " ++ zeroHandler cz ++ " cents"
+    ds' ++ " and " ++ cs'
 
 digits ::
   Chars
@@ -387,7 +399,12 @@ hundo = \case
   D1 o -> showDigit o
   D2 Zero o -> showDigit o
   D2 One o -> showTeen o
-  D2 t o -> showTen t ++ " " ++ showDigit o
+  D2 t Zero -> showTen t
+  D2 t o -> showTen t ++ "-" ++ showDigit o
+  D3 Zero Zero Zero -> ""
+  D3 Zero Zero o -> showDigit o
+  D3 Zero t o -> hundo (D2 t o)
+  D3 h Zero Zero -> showDigit h ++ " hundred"
   D3 h t o -> showDigit h ++ " hundred and " ++ hundo (D2 t o)
 
 showTeen ::
